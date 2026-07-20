@@ -1,0 +1,10 @@
+{
+  "description": "Engage children aged 5-10 in math learning through interactive, gamified experiences with colorful number blocks, fostering creativity and problem-solving skills.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

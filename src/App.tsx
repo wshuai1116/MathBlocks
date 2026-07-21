@@ -914,12 +914,14 @@ export default function App() {
   const [showResult, setShowResult] = useState(false)
   const [resultData, setResultData] = useState<ResultData | null>(null)
   const [showComponents, setShowComponents] = useState(false)
+  const [showMotion, setShowMotion] = useState(false)
 
   const handleNavSelect = (id: string) => {
     setShowAdventureMap(false)
     setShowPractice(false)
     setShowResult(false)
     setShowComponents(false)
+    setShowMotion(false)
     setTab(id as Tab)
   }
   const openPractice = () => { setShowResult(false); setShowPractice(true) }
@@ -928,7 +930,9 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', background: COLORS.neutral, fontFamily: 'Nunito, system-ui, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ width: '100%', maxWidth: 430, minHeight: '100vh', background: COLORS.neutral, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        {showComponents ? (
+        {showMotion ? (
+          <MotionDesignScreen onBack={() => setShowMotion(false)} />
+        ) : showComponents ? (
           <ComponentLibraryScreen onBack={() => setShowComponents(false)} />
         ) : showResult && resultData ? (
           <ResultScreen data={resultData} onPlayAgain={openPractice} onContinue={() => { setShowResult(false); setShowPractice(false); setTab('home') }} onNavSelect={handleNavSelect} />
@@ -943,7 +947,7 @@ export default function App() {
               {tab === 'home' && <HomeTab onOpenAdventureMap={() => setShowAdventureMap(true)} onOpenPractice={openPractice} />}
               {tab === 'learn' && <LearnTab onStartLesson={openPractice} />}
               {tab === 'play' && <PlayTab onStartPractice={openPractice} />}
-              {tab === 'me' && <MeTab onOpenComponents={() => setShowComponents(true)} />}
+              {tab === 'me' && <MeTab onOpenComponents={() => setShowComponents(true)} onOpenMotion={() => setShowMotion(true)} />}
             </div>
             <BottomNavBar active={tab} onSelect={handleNavSelect} />
           </>
@@ -1999,7 +2003,7 @@ function PlayTab({ onStartPractice }: { onStartPractice?: () => void }) {
 
 // ─── Me Tab ───────────────────────────────────────────────────────────────────
 
-function MeTab({ onOpenComponents }: { onOpenComponents?: () => void }) {
+function MeTab({ onOpenComponents, onOpenMotion }: { onOpenComponents?: () => void; onOpenMotion?: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <ProfileCard name="Maya J." level={12} xp={680} coins={1240} streak={7} />
@@ -2070,6 +2074,30 @@ function MeTab({ onOpenComponents }: { onOpenComponents?: () => void }) {
           </div>
         </div>
         <ArrowRightIcon size={16} color="rgba(167,139,250,0.7)" />
+      </button>
+
+      <button
+        onClick={onOpenMotion}
+        style={{
+          width: '100%', padding: '14px 20px',
+          background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+          border: 'none', borderRadius: 18, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          boxShadow: '0 4px 0 0 #050A14, 0 6px 24px rgba(15,23,42,0.3)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 12,
+            background: 'rgba(99,102,241,0.3)', border: '1px solid rgba(99,102,241,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+          }}>✦</div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 15, color: '#fff' }}>Motion Design</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11.5, color: 'rgba(148,163,184,0.8)' }}>Animation Specs · Easing · Timing</div>
+          </div>
+        </div>
+        <ArrowRightIcon size={16} color="rgba(148,163,184,0.6)" />
       </button>
     </div>
   )
@@ -5139,6 +5167,758 @@ function ComponentLibraryScreen({ onBack }: { onBack: () => void }) {
           </div>
         )}
 
+      </div>
+    </div>
+  )
+}
+
+
+// ─── Motion Design Screen ─────────────────────────────────────────────────────
+
+// ── Motion spec data model ────────────────────────────────────────────────────
+
+type MotionCategory = 'ambient' | 'feedback' | 'progress' | 'character' | 'transition' | 'reward'
+
+interface MotionSpec {
+  id: string
+  name: string
+  description: string
+  category: MotionCategory
+  duration: string
+  easing: string
+  easingCss: string
+  loop: string
+  trigger: string
+  delay?: string
+  cssClass: string
+  framerProps: string
+  notes: string
+  weight: 'ultra-light' | 'light' | 'medium' | 'expressive'
+  preview: () => React.ReactElement
+}
+
+const CAT_META: Record<MotionCategory, { label: string; color: string; bg: string; emoji: string }> = {
+  ambient:    { label: 'Ambient',    color: '#6BCBFF', bg: 'rgba(107,203,255,0.12)', emoji: '🌊' },
+  feedback:   { label: 'Feedback',   color: '#A78BFA', bg: 'rgba(167,139,250,0.12)', emoji: '👆' },
+  progress:   { label: 'Progress',   color: '#4FD37A', bg: 'rgba(79,211,122,0.12)',  emoji: '📈' },
+  character:  { label: 'Character',  color: '#FFB347', bg: 'rgba(255,179,71,0.12)',  emoji: '🦊' },
+  transition: { label: 'Transition', color: '#FFD54A', bg: 'rgba(255,213,74,0.12)',  emoji: '✨' },
+  reward:     { label: 'Reward',     color: '#FF7B7B', bg: 'rgba(255,123,123,0.12)', emoji: '🎉' },
+}
+
+const WEIGHT_META: Record<MotionSpec['weight'], { label: string; color: string }> = {
+  'ultra-light': { label: 'Ultra-light', color: '#6BCBFF' },
+  'light':       { label: 'Light',       color: '#4FD37A' },
+  'medium':      { label: 'Medium',      color: '#FFB347' },
+  'expressive':  { label: 'Expressive',  color: '#A78BFA' },
+}
+
+// ── Easing curve SVG ─────────────────────────────────────────────────────────
+
+function EasingCurve({ css, color = '#A78BFA', size = 56 }: { css: string; color?: string; size?: number }) {
+  const curves: Record<string, [number, number, number, number]> = {
+    'spring-bouncy': [0.34, 1.56, 0.64, 1],
+    'spring-gentle': [0.25, 0.46, 0.45, 0.94],
+    'spring-snappy': [0.4,  1.3,  0.6,  1],
+    'decelerate':    [0,    0,    0.2,  1],
+    'accelerate':    [0.4,  0,    1,    1],
+    'ease-in-out':   [0.42, 0,    0.58, 1],
+    'ease-out':      [0,    0,    0.58, 1],
+    'ease-in':       [0.42, 0,    1,    1],
+    'linear':        [0,    0,    1,    1],
+  }
+  const key = Object.keys(curves).find(k => css.includes(k)) ?? 'ease-in-out'
+  const [x1, y1, x2, y2] = curves[key]
+  const p = size - 10; const pad = 5
+  const sx = pad, sy = p + pad, ex = p + pad, ey = pad
+  const c1x = pad + x1 * p, c1y = (p + pad) - y1 * p
+  const c2x = pad + x2 * p, c2y = (p + pad) - y2 * p
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+      <line x1={pad} y1={pad} x2={pad} y2={p+pad} stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+      <line x1={pad} y1={p+pad} x2={p+pad} y2={p+pad} stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+      <line x1={sx} y1={sy} x2={ex} y2={ey} stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="3 3"/>
+      <line x1={sx} y1={sy} x2={c1x} y2={c1y} stroke={`${color}44`} strokeWidth="1"/>
+      <line x1={ex} y1={ey} x2={c2x} y2={c2y} stroke={`${color}44`} strokeWidth="1"/>
+      <path d={`M${sx},${sy} C${c1x},${c1y} ${c2x},${c2y} ${ex},${ey}`} stroke={color} strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <circle cx={c1x} cy={c1y} r="2.5" fill={color} opacity="0.7"/>
+      <circle cx={c2x} cy={c2y} r="2.5" fill={color} opacity="0.7"/>
+      <circle cx={sx} cy={sy} r="3" fill={color}/>
+      <circle cx={ex} cy={ey} r="3" fill={color}/>
+    </svg>
+  )
+}
+
+// ── Motion spec card ──────────────────────────────────────────────────────────
+
+function MotionSpecCard({ spec }: { spec: MotionSpec }) {
+  const [animKey, setAnimKey] = React.useState(0)
+  const cat = CAT_META[spec.category]
+  const wt = WEIGHT_META[spec.weight]
+  return (
+    <div style={{
+      background: 'rgba(15,23,42,0.72)', backdropFilter: 'blur(20px)',
+      borderRadius: 24, overflow: 'hidden',
+      border: '1px solid rgba(255,255,255,0.07)',
+      boxShadow: '0 8px 40px rgba(0,0,0,0.35)',
+    }}>
+      {/* Category + weight strip */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'11px 18px 9px', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontSize:14 }}>{cat.emoji}</span>
+          <div style={{ fontFamily:'Nunito', fontWeight:800, fontSize:11, color:cat.color, background:cat.bg, borderRadius:999, padding:'3px 10px' }}>{cat.label}</div>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <div style={{ width:7, height:7, borderRadius:'50%', background:wt.color, boxShadow:`0 0 6px ${wt.color}` }}/>
+          <span style={{ fontFamily:'Nunito', fontWeight:700, fontSize:11, color:'rgba(148,163,184,0.8)' }}>{wt.label}</span>
+        </div>
+      </div>
+
+      {/* Preview + name row */}
+      <div style={{ display:'flex' }}>
+        <div style={{ width:110, flexShrink:0, background:'rgba(0,0,0,0.28)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, padding:'20px 8px', borderRight:'1px solid rgba(255,255,255,0.05)', position:'relative' }}>
+          <div key={animKey} style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>{spec.preview()}</div>
+          <button onClick={() => setAnimKey(k => k + 1)} style={{ position:'absolute', bottom:8, right:8, background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, width:24, height:24, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:12, color:'rgba(148,163,184,0.8)' }} title="Replay">↺</button>
+        </div>
+        <div style={{ flex:1, padding:'16px 18px 14px' }}>
+          <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:16, color:'#F1F5F9', lineHeight:1.1, marginBottom:5 }}>{spec.name}</div>
+          <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:12.5, color:'rgba(148,163,184,0.85)', lineHeight:1.5, marginBottom:10 }}>{spec.description}</div>
+          <div style={{ display:'inline-flex', alignItems:'center', gap:5, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.09)', borderRadius:999, padding:'3px 10px' }}>
+            <span style={{ fontSize:10 }}>⚡</span>
+            <span style={{ fontFamily:'Nunito', fontWeight:700, fontSize:11, color:'rgba(148,163,184,0.8)' }}>{spec.trigger}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Timing grid */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', borderTop:'1px solid rgba(255,255,255,0.05)', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+        {[['Duration', spec.duration], ['Loop', spec.loop], ['Delay', spec.delay ?? '—']].map(([label, value], i) => (
+          <div key={label} style={{ padding:'12px 0', textAlign:'center', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+            <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:14, color:'#F1F5F9', lineHeight:1, wordBreak:'break-word', padding:'0 6px' }}>{value}</div>
+            <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:10, color:'rgba(100,116,139,1)', marginTop:3, letterSpacing:'0.04em', textTransform:'uppercase' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Easing + curve */}
+      <div style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 18px', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+        <EasingCurve css={spec.easingCss} color={cat.color} size={52}/>
+        <div style={{ flex:1 }}>
+          <div style={{ fontFamily:'Nunito', fontWeight:800, fontSize:11, color:'rgba(100,116,139,1)', marginBottom:4, letterSpacing:'0.06em', textTransform:'uppercase' }}>Easing</div>
+          <div style={{ fontFamily:'Nunito', fontWeight:800, fontSize:13, color:cat.color, marginBottom:3 }}>{spec.easing}</div>
+          <code style={{ fontFamily:'monospace', fontSize:10.5, color:'rgba(148,163,184,0.7)', background:'rgba(0,0,0,0.25)', borderRadius:6, padding:'2px 7px', display:'block', lineHeight:1.7, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{spec.easingCss}</code>
+        </div>
+      </div>
+
+      {/* CSS + Framer + notes */}
+      <div style={{ padding:'12px 18px' }}>
+        <div style={{ display:'flex', gap:7, marginBottom:10, flexWrap:'wrap' }}>
+          <code style={{ fontFamily:'monospace', fontSize:10.5, color:'#818CF8', background:'rgba(99,102,241,0.12)', borderRadius:7, padding:'3px 9px', border:'1px solid rgba(99,102,241,0.2)' }}>{spec.cssClass}</code>
+        </div>
+        <code style={{ fontFamily:'monospace', fontSize:10, color:'rgba(148,163,184,0.6)', background:'rgba(255,255,255,0.03)', borderRadius:8, padding:'8px 10px', display:'block', lineHeight:1.7, marginBottom:10, overflow:'hidden', wordBreak:'break-all', border:'1px solid rgba(255,255,255,0.05)' }}>{spec.framerProps}</code>
+        <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:11.5, color:'rgba(100,116,139,0.9)', lineHeight:1.55, padding:'8px 12px', borderRadius:10, background:'rgba(255,255,255,0.03)', borderLeft:`3px solid ${cat.color}55` }}>
+          💡 {spec.notes}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Preview components ────────────────────────────────────────────────────────
+
+function PreviewCoinBounce() {
+  return (
+    <div className="animate-coin-bounce-motion" style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+      <div style={{ width:44, height:44, borderRadius:14, background:'linear-gradient(135deg,#FFD54A 0%,#FFB347 100%)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 5px 0 0 #C9930D, 0 6px 16px rgba(255,213,74,0.4)', fontSize:22 }}>🪙</div>
+      <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:13, color:'#FFD54A' }}>+50</div>
+    </div>
+  )
+}
+
+function PreviewStarRotate() {
+  return <div className="animate-star-rotate"><StarIcon size={38} filled color="#FFD54A"/></div>
+}
+
+function PreviewTreasure() {
+  return <div className="animate-treasure-open" style={{ fontSize:44, lineHeight:1, filter:'drop-shadow(0 4px 12px rgba(255,213,74,0.5))' }}>📦</div>
+}
+
+function PreviewButtonPress() {
+  const [pressed, setPressed] = React.useState(false)
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:8, alignItems:'center' }}>
+      <button onPointerDown={() => setPressed(true)} onPointerUp={() => setPressed(false)} onPointerLeave={() => setPressed(false)}
+        style={{ padding:'10px 22px', background:'linear-gradient(160deg,#A78BFA 0%,#6366F1 100%)', border:'none', borderRadius:14, cursor:'pointer', fontFamily:'Nunito', fontWeight:900, fontSize:14, color:'#fff', boxShadow: pressed ? '0 1px 0 0 #4C1D95,0 2px 6px rgba(167,139,250,0.3)' : '0 5px 0 0 #4C1D95,0 8px 20px rgba(167,139,250,0.4)', transform: pressed ? 'translateY(4px)' : 'translateY(0)', transition:'transform 0.09s ease,box-shadow 0.09s ease', userSelect:'none' }}>
+        Tap me!
+      </button>
+      <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:10, color:'rgba(148,163,184,0.6)' }}>{pressed ? 'PRESSED' : 'hold to press'}</div>
+    </div>
+  )
+}
+
+function PreviewCardHover() {
+  const [hovered, setHovered] = React.useState(false)
+  return (
+    <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      style={{ width:82, padding:'12px 10px', borderRadius:18, cursor:'pointer', background:'linear-gradient(135deg,rgba(167,139,250,0.22) 0%,rgba(99,102,241,0.18) 100%)', border:`1.5px solid rgba(167,139,250,${hovered?0.55:0.2})`, boxShadow: hovered ? '0 12px 36px rgba(167,139,250,0.25),0 4px 12px rgba(0,0,0,0.12)' : '0 3px 12px rgba(0,0,0,0.08)', transform: hovered ? 'translateY(-4px) scale(1.03)' : 'translateY(0) scale(1)', transition:'transform 0.22s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.22s ease,border-color 0.18s', textAlign:'center' }}>
+      <div style={{ fontSize:24, marginBottom:5 }}>📚</div>
+      <div style={{ fontFamily:'Nunito', fontWeight:800, fontSize:11, color:'#C4ADFC', lineHeight:1.2 }}>Lesson</div>
+    </div>
+  )
+}
+
+function PreviewProgressFill({ k }: { k: number }) {
+  return (
+    <div key={k} style={{ width:82 }}>
+      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+        <span style={{ fontFamily:'Nunito', fontWeight:700, fontSize:10, color:'rgba(148,163,184,0.7)' }}>XP</span>
+        <span style={{ fontFamily:'Nunito', fontWeight:800, fontSize:10, color:'#4FD37A' }}>72%</span>
+      </div>
+      <div style={{ height:10, background:'rgba(255,255,255,0.08)', borderRadius:999, overflow:'hidden' }}>
+        <div className="animate-xp-bar" style={{ height:'100%', width:'72%', background:'linear-gradient(90deg,#4FD37A 0%,#6BCBFF 60%,#A78BFA 100%)', borderRadius:999, boxShadow:'0 0 10px rgba(79,211,122,0.55)', animationDuration:'1.4s' }}/>
+      </div>
+      <div style={{ display:'flex', gap:3, marginTop:6 }}>
+        {Array.from({length:8},(_,i) => (
+          <div key={i} style={{ flex:1, height:6, borderRadius:999, background: i<5 ? '#4FD37A' : i===5 ? '#A78BFA' : 'rgba(255,255,255,0.08)', boxShadow: i===5 ? '0 0 6px rgba(167,139,250,0.7)' : 'none' }}/>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PreviewDragGhost() {
+  const [lifted, setLifted] = React.useState(false)
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:10, alignItems:'center' }}>
+      <div style={{ display:'flex', gap:8, alignItems:'flex-end' }}>
+        <div style={{ opacity:0.32, filter:'grayscale(0.4)' }}><NumberBlock value={7} size="md"/></div>
+        <div style={{ transform: lifted ? 'scale(1.28) rotate(-6deg)' : 'scale(1)', filter: lifted ? 'drop-shadow(0 14px 28px rgba(0,0,0,0.32))' : 'none', transition: lifted ? 'none' : 'all 0.2s', cursor:'grab' }}>
+          <NumberBlock value={7} color="blue" size="md"/>
+        </div>
+      </div>
+      <button onClick={() => setLifted(l => !l)} style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'4px 10px', cursor:'pointer', fontFamily:'Nunito', fontWeight:700, fontSize:10, color:'rgba(148,163,184,0.8)' }}>
+        {lifted ? 'Drop ↓' : 'Lift ↑'}
+      </button>
+    </div>
+  )
+}
+
+function PreviewSlotGlow() {
+  return (
+    <div style={{ position:'relative', display:'inline-flex' }}>
+      <div className="animate-slot-idle"><OperatorBlock op="?" size="lg"/></div>
+      <div style={{ position:'absolute', inset:-8, borderRadius:24, border:'2.5px dashed rgba(255,213,74,0.8)', animation:'slot-drop-glow 0.65s ease-in-out infinite', pointerEvents:'none' }}/>
+    </div>
+  )
+}
+
+function PreviewIslandUnlock({ k }: { k: number }) {
+  return (
+    <div key={k} style={{ position:'relative', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ position:'absolute', width:72, height:72, borderRadius:'50%', border:'3px solid rgba(255,213,74,0.7)', animation:'level-complete-ring 1.2s ease-out both', animationDelay:'0.3s' }}/>
+      <div style={{ position:'absolute', width:56, height:56, borderRadius:'50%', border:'2px solid rgba(255,213,74,0.5)', animation:'level-complete-ring 1.2s ease-out both', animationDelay:'0.5s' }}/>
+      <div className="animate-island-unlock" style={{ zIndex:1 }}>
+        <div style={{ width:52, height:52, borderRadius:16, background:'linear-gradient(135deg,#4FD37A 0%,#35B862 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, boxShadow:'0 6px 0 0 #2A9E50,0 8px 24px rgba(79,211,122,0.45)' }}>🌳</div>
+      </div>
+    </div>
+  )
+}
+
+function PreviewLevelComplete({ k }: { k: number }) {
+  return (
+    <div key={k} style={{ position:'relative', width:72, height:72, display:'flex', alignItems:'center', justifyContent:'center' }}>
+      {[0,1,2,3].map(i => (
+        <div key={i} style={{ position:'absolute', width:72, height:72, borderRadius:'50%', border:`2px solid rgba(167,139,250,${0.7-i*0.15})`, animation:'level-complete-ring 1.4s ease-out both', animationDelay:`${i*0.18}s` }}/>
+      ))}
+      <div className="animate-bounce-in" style={{ zIndex:1 }}>
+        <TrophyIcon size={34} color="#FFD54A"/>
+      </div>
+    </div>
+  )
+}
+
+function PreviewRewardBurst({ k }: { k: number }) {
+  return (
+    <div key={k} style={{ position:'relative', width:72, height:72, display:'flex', alignItems:'center', justifyContent:'center' }}>
+      {Array.from({length:8},(_,i) => (
+        <div key={i} style={{ position:'absolute', width: 8+i%3*3, height:8+i%3*3, borderRadius: i%2===0 ? '50%' : '3px', background:['#FFD54A','#4FD37A','#A78BFA','#FF7B7B','#6BCBFF','#FFB347','#fff','#FFD54A'][i], animation:'reward-burst 0.9s ease-out both', animationDelay:`${i*0.04}s` }}/>
+      ))}
+      <div className="animate-bounce-in" style={{ zIndex:1, fontSize:26 }}>🌟</div>
+    </div>
+  )
+}
+
+// ── Spec data ─────────────────────────────────────────────────────────────────
+
+function buildSpecs(): MotionSpec[] {
+  return [
+    {
+      id:'block-float', name:'Number Block Floating', category:'ambient',
+      description:'Gentle vertical sine wave. Creates living, playful depth on home screen and backgrounds.',
+      duration:'3 – 5s', easing:'Ease In-Out Sine', easingCss:'ease-in-out',
+      loop:'Infinite', trigger:'Always on / on mount', delay:'Stagger +0.3 – 0.8s per block',
+      cssClass:'.animate-float', framerProps:'animate={{ y: [0,-6,0] }} transition={{ duration:3.5, repeat:Infinity, ease:"easeInOut" }}',
+      notes:'Stagger multiple blocks so they never sync. Keep amplitude 4–8px. Background blocks use opacity 0.25–0.35 — never full.',
+      weight:'ultra-light',
+      preview: () => <div className="animate-float"><NumberBlock value={4} color="blue" size="md"/></div>,
+    },
+    {
+      id:'cloud-drift', name:'Cloud Drift', category:'ambient',
+      description:'Slow horizontal oscillation for background clouds. Reinforces the sky-world metaphor.',
+      duration:'10 – 18s', easing:'Ease In-Out Sine', easingCss:'ease-in-out',
+      loop:'Infinite', trigger:'Always on', delay:'Stagger +3–6s per cloud',
+      cssClass:'.animate-cloud-drift', framerProps:'animate={{ x:[0,10,0] }} transition={{ duration:14, repeat:Infinity, ease:"easeInOut" }}',
+      notes:'Max translateX 8–12px. Lower-opacity clouds move faster for parallax depth. Never distort with scale.',
+      weight:'ultra-light',
+      preview: () => <CloudBlob w={80} style={{ opacity:0.7, animation:'cloud-drift 8s ease-in-out infinite' }}/>,
+    },
+    {
+      id:'sparkle', name:'Sparkle Twinkle', category:'ambient',
+      description:'Opacity + subtle scale pulse on decorative sparkle stars. Atmospheric magic without distraction.',
+      duration:'2 – 3s', easing:'Ease In-Out', easingCss:'ease-in-out',
+      loop:'Infinite', trigger:'Always on', delay:'Unique per sparkle (0–3s)',
+      cssClass:'.animate-sparkle', framerProps:'animate={{ opacity:[0.3,1,0.3], scale:[0.8,1.1,0.8] }} transition={{ duration:2.5, repeat:Infinity }}',
+      notes:'Use 6–8 sparkles per scene with fully randomised delays. Sizes 5–10px. Colour variety: yellow, purple, blue, green.',
+      weight:'ultra-light',
+      preview: () => (
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'center', width:80 }}>
+          {[{c:'#FFD54A',d:'0s'},{c:'#A78BFA',d:'0.6s'},{c:'#6BCBFF',d:'1.2s'},{c:'#4FD37A',d:'1.8s'}].map((s,i)=>(
+            <div key={i} className="animate-sparkle" style={{ animationDelay:s.d, width:10, height:10, background:s.c, borderRadius:'50%', boxShadow:`0 0 6px ${s.c}` }}/>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id:'button-press', name:'Button Press (LEGO)', category:'feedback',
+      description:'3D LEGO-style press: translateY compresses the bottom-ledge shadow. Block pushes down physically.',
+      duration:'0.09s press · 0.15s release', easing:'Linear press · Spring release', easingCss:'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      loop:'None', trigger:'pointerdown / pointerup',
+      cssClass:'Inline: transform + boxShadow via useState(pressed)', framerProps:'whileTap={{ y:4, boxShadow:"0 1px 0 0 ..." }} transition={{ duration:0.09 }}',
+      notes:'Exactly match the 3D ledge height (5–6px). Shadow shrinks to 1px on press. Release uses spring (stiffness 500) for snap-back. Critical for tactile feel on touchscreens.',
+      weight:'medium',
+      preview: () => <PreviewButtonPress/>,
+    },
+    {
+      id:'card-hover', name:'Card Hover & Lift', category:'feedback',
+      description:'Card floats upward + shadow deepens + border subtly brightens. Confirms the surface is tappable.',
+      duration:'0.22s', easing:'Spring Gentle', easingCss:'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      loop:'None', trigger:'mouseenter / :hover',
+      cssClass:'Inline hover state via React useState', framerProps:'whileHover={{ y:-4, scale:1.02 }} transition={{ type:"spring", stiffness:320, damping:18 }}',
+      notes:'translateY(-4px) + scale(1.02–1.03). Shadow goes from card-shadow to card-shadow-lg. On touch devices omit hover; rely on press state only.',
+      weight:'light',
+      preview: () => <PreviewCardHover/>,
+    },
+    {
+      id:'micro-tap', name:'Micro-tap Feedback', category:'feedback',
+      description:'Instant scale pulse on any tappable element. Sub-200ms. The heartbeat of interaction.',
+      duration:'0.22 – 0.32s', easing:'Spring Snappy', easingCss:'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      loop:'None', trigger:'onClick / pointerdown',
+      cssClass:'.animate-pop · .animate-micro-tap', framerProps:'whileTap={{ scale:0.9 }} transition={{ type:"spring", stiffness:600, damping:14 }}',
+      notes:'Scale dips to 0.88 first, then overshoots 1.06 before settling at 1. Never delay — instant response makes children feel the app is alive.',
+      weight:'light',
+      preview: () => <div className="animate-pop" style={{ animationIterationCount:'infinite', animationDuration:'2s' }}><NumberBlock value={5} color="orange" size="md"/></div>,
+    },
+    {
+      id:'drag-ghost', name:'Drag Ghost Lift', category:'feedback',
+      description:'Block scales up and rotates on drag start. Ghost follows pointer; source dims to 35% opacity.',
+      duration:'0.18s lift', easing:'Ease Out', easingCss:'ease-out',
+      loop:'None', trigger:'pointerdown + movement > 10px',
+      cssClass:'.animate-drag-ghost + inline ghost position', framerProps:'whileDrag={{ scale:1.28, rotate:-6 }} drag dragSnapToOrigin',
+      notes:'Source fades to 0.35 opacity and slight grayscale. Ghost uses drop-shadow(0 14px 28px rgba(0,0,0,0.32)). touchAction:none prevents scroll hijacking.',
+      weight:'medium',
+      preview: () => <PreviewDragGhost/>,
+    },
+    {
+      id:'slot-glow', name:'Answer Slot Glow', category:'feedback',
+      description:'Dashed border + pulsing drop-shadow signals the drop target when dragging. Yellow = "drop here!"',
+      duration:'Idle: 2.6s · Active: 0.65s', easing:'Ease In-Out', easingCss:'ease-in-out',
+      loop:'Infinite while active', trigger:'dragover slot bounding box',
+      cssClass:'.animate-slot-idle · .slot-drop-glow via state', framerProps:'animate={{ boxShadow:[...] }} transition={{ repeat:Infinity, duration:0.65 }}',
+      notes:'Slot scales to 1.12× when dragged over. Dashed border becomes solid on hover. Pulses purple at rest, gold on drag-hover.',
+      weight:'light',
+      preview: () => <PreviewSlotGlow/>,
+    },
+    {
+      id:'wrong-shake', name:'Wrong Answer Shake', category:'feedback',
+      description:'Horizontal wiggle communicates error gently. Max ±8° — this is for 5-year-olds. Keep it warm.',
+      duration:'0.4s', easing:'Ease In-Out', easingCss:'ease-in-out',
+      loop:'None', trigger:'Wrong answer submitted',
+      cssClass:'.animate-wiggle', framerProps:'animate={{ rotate:[0,-8,8,-5,5,0] }} transition={{ duration:0.4 }}',
+      notes:'Always pair with a warm encouraging message. Border shifts to coral. Block colour also shifts to coral. Never show a red X without a supportive message.',
+      weight:'medium',
+      preview: () => <div className="animate-wiggle" style={{ animationIterationCount:'infinite', animationDuration:'2.5s' }}><NumberBlock value={3} color="coral" size="md"/></div>,
+    },
+    {
+      id:'progress-fill', name:'Progress Bar Fill', category:'progress',
+      description:'Spring-overshoot fill from 0 to target width. The overshoot makes it feel rewarding, not mechanical.',
+      duration:'1.4 – 1.6s', easing:'Spring Bouncy', easingCss:'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      loop:'None', trigger:'Component mount / score update', delay:'0.3 – 0.6s after screen enter',
+      cssClass:'.animate-xp-bar', framerProps:'animate={{ width:"75%" }} initial={{ width:"0%" }} transition={{ type:"spring", stiffness:60, damping:10, delay:0.4 }}',
+      notes:'Always animate on mount — never show a pre-filled bar. Add a shimmer overlay after fill completes. Gradient flows left→right for directional momentum.',
+      weight:'medium',
+      preview: () => <PreviewProgressFill k={0}/>,
+    },
+    {
+      id:'star-award', name:'Star Award Reveal', category:'progress',
+      description:'Stars pop in sequentially with spring overshoot. Each waits 120ms for the one before it.',
+      duration:'0.55s per star', easing:'Spring Bouncy', easingCss:'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      loop:'None', trigger:'Lesson complete / result screen mount', delay:'+0.10s, +0.22s, +0.34s',
+      cssClass:'.animate-star-award', framerProps:'animate={{ scale:[0,1.25,0.9,1], rotate:[-45,10,-4,0] }} transition={{ delay:i*0.12 }}',
+      notes:'Add drop-shadow(0 0 14px rgba(255,213,74,0.8)) at peak scale. The rotation from -45° to 0° makes each star feel "fired" in.',
+      weight:'expressive',
+      preview: () => (
+        <div style={{ display:'flex', gap:5 }}>
+          {[0,1,2].map(i => (
+            <div key={i} className="animate-star-award" style={{ animationDelay:`${0.1+i*0.12}s`, animationIterationCount:'infinite', animationDuration:`${2.5+i*0.4}s` }}>
+              <StarIcon size={28} filled color="#FFD54A"/>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id:'answer-pop', name:'Answer Block Pop-in', category:'progress',
+      description:'Number block springs into answer slot with rotation + scale. Confirms placement viscerally.',
+      duration:'0.42s', easing:'Spring Bouncy', easingCss:'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      loop:'None', trigger:'Block dropped on answer slot',
+      cssClass:'.animate-answer-pop', framerProps:'animate={{ scale:[0.4,1.18,0.95,1], rotate:[-12,4,-1,0] }} transition={{ duration:0.42 }}',
+      notes:'Color changes neutral → green (correct) or coral (wrong) after 200ms delay. The rotation removal tells the child the block "snapped in."',
+      weight:'expressive',
+      preview: () => <div className="animate-answer-pop" style={{ animationIterationCount:'infinite', animationDuration:'2.2s' }}><NumberBlock value={7} color="green" size="lg"/></div>,
+    },
+    {
+      id:'mascot-float', name:'Mascot Float', category:'character',
+      description:'Default idle state. Blox gently bobs up and down. Always alive, never completely still.',
+      duration:'4s', easing:'Ease In-Out Sine', easingCss:'ease-in-out',
+      loop:'Infinite', trigger:'Always on / idle',
+      cssClass:'.animate-float (wrapping Mascot)', framerProps:'animate={{ y:[0,-6,0] }} transition={{ duration:4, repeat:Infinity, ease:"easeInOut" }}',
+      notes:'Drop shadow ellipse opacity increases when mascot is highest. 6px amplitude max. Combines with blink for full idle animation.',
+      weight:'ultra-light',
+      preview: () => <div className="animate-float"><Mascot size={62}/></div>,
+    },
+    {
+      id:'mascot-blink', name:'Mascot Blink', category:'character',
+      description:'Eyes scale to 0.08 in Y and back. Happens every 3–5s randomly. Crucial for character life.',
+      duration:'0.16s total (0.08s close + 0.08s open)', easing:'Linear', easingCss:'linear',
+      loop:'Infinite (random 3–6s interval)', trigger:'Random interval timer',
+      cssClass:'.animate-blink (on eye SVG)', framerProps:'animate={{ scaleY:[1,0.08,1] }} transition={{ duration:0.16, repeatDelay: 3+Math.random()*4 }}',
+      notes:'Randomise repeat delay 3–6s. Occasionally chain two quick blinks. Eyes close fast (0.08s), open slightly slower (0.12s) for organic asymmetry.',
+      weight:'ultra-light',
+      preview: () => <div className="animate-blink" style={{ animationDuration:'3s' }}><Mascot size={62}/></div>,
+    },
+    {
+      id:'mascot-wave', name:'Mascot Wave', category:'character',
+      description:'Celebration wave for correct answers and result screens. Oscillating rotation with arm motion.',
+      duration:'2.2s loop', easing:'Ease In-Out', easingCss:'ease-in-out',
+      loop:'Infinite (3 cycles then return to float)', trigger:'Correct answer · Level complete · Result screen',
+      cssClass:'.animate-mascot-wave', framerProps:'animate={{ rotate:[0,-8,10,-5,7,0] }} transition={{ duration:2.2, repeat:Infinity, ease:"easeInOut" }}',
+      notes:'Combine with subtle translateY bobbing (+2px). On complete screens play 3 loops then return to float. Should feel joyful, not mechanical.',
+      weight:'medium',
+      preview: () => <div className="animate-mascot-wave"><Mascot size={62}/></div>,
+    },
+    {
+      id:'island-unlock', name:'Island Unlock', category:'transition',
+      description:'World island bounces in from below with golden glow rings that expand and fade. Unlocking feels like discovery.',
+      duration:'1.0s entry · 1.2s rings', easing:'Spring Bouncy', easingCss:'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      loop:'None (one-shot)', trigger:'World unlocked event', delay:'0.2s after world gate appears',
+      cssClass:'.animate-island-unlock + @keyframes level-complete-ring', framerProps:'initial={{ scale:0.6, y:20, opacity:0 }} animate={{ scale:1, y:0, opacity:1 }} transition={{ type:"spring", stiffness:180 }}',
+      notes:'Two rings expand outward with 0.2s stagger. Island gets persistent glow after unlock. Pair with confetti burst.',
+      weight:'expressive',
+      preview: () => <PreviewIslandUnlock k={0}/>,
+    },
+    {
+      id:'screen-enter', name:'Screen Entry', category:'transition',
+      description:'Full screen slides up + fades in from translateY(30px). Like a new card dealt in a card game.',
+      duration:'0.7s', easing:'Spring Gentle', easingCss:'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      loop:'None', trigger:'Screen mount (navigation)',
+      cssClass:'.animate-result-hero', framerProps:'initial={{ y:30, opacity:0, scale:0.96 }} animate={{ y:0, opacity:1, scale:1 }} transition={{ type:"spring", stiffness:200, damping:24 }}',
+      notes:'Background gradient fades at 0.6× the content speed. Bottom nav bar slides up from off-screen simultaneously. Exit transitions stay fast (0.25s fade).',
+      weight:'medium',
+      preview: () => (
+        <div className="animate-result-hero" style={{ animationIterationCount:'infinite', animationDuration:'3s' }}>
+          <div style={{ width:76, height:50, borderRadius:16, background:'linear-gradient(135deg,rgba(167,139,250,0.3) 0%,rgba(99,102,241,0.25) 100%)', border:'1.5px solid rgba(167,139,250,0.3)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <ArrowRightIcon size={18} color="rgba(167,139,250,0.8)"/>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id:'badge-unlock', name:'Badge Unlock', category:'transition',
+      description:'Achievement badge scales in with CCW spin, desaturated → full colour. Feels genuinely earned.',
+      duration:'0.6s', easing:'Spring Bouncy', easingCss:'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      loop:'None', trigger:'Achievement unlocked', delay:'Per-badge stagger +0.1s',
+      cssClass:'.animate-badge-unlock', framerProps:'initial={{ scale:0, rotate:-20, filter:"grayscale(1)" }} animate={{ scale:1, rotate:0, filter:"grayscale(0)" }}',
+      notes:'Greyscale→colour at peak scale makes the badge "come alive." Add 3 sparkle particles on arrival.',
+      weight:'expressive',
+      preview: () => (
+        <div className="animate-badge-unlock" style={{ animationIterationCount:'infinite', animationDuration:'3s' }}>
+          <AchievementBadge icon={<TrophyIcon size={22} color="#fff"/>} label="Gold" tier="gold" size="sm"/>
+        </div>
+      ),
+    },
+    {
+      id:'coin-bounce', name:'Coin Bounce', category:'reward',
+      description:'Squash-and-stretch coin follows gravity arc. Apex: horizontal squash. Landing: vertical squash.',
+      duration:'1.4s', easing:'Gravity arc (custom)', easingCss:'cubic-bezier(0.4, 0, 0.2, 1)',
+      loop:'Infinite on displays · 3× on earn', trigger:'Coin earned · CoinDisplay mount',
+      cssClass:'.animate-coin-bounce-motion', framerProps:'animate={{ y:[0,-22,0], scaleX:[1,0.88,1.06,1], scaleY:[1,1.14,0.94,1] }} transition={{ duration:1.4, repeat:Infinity }}',
+      notes:'Apex: scaleX 0.88 / scaleY 1.14 (elongated). Landing: scaleX 1.06 / scaleY 0.92 (squashed). Disney squash-and-stretch principle #1.',
+      weight:'medium',
+      preview: () => <PreviewCoinBounce/>,
+    },
+    {
+      id:'star-rotate', name:'Star Rotation', category:'reward',
+      description:'Star slowly rotates with gentle scale pulse at 90° and 270° intervals. Ambient shine effect.',
+      duration:'3s', easing:'Linear', easingCss:'linear',
+      loop:'Infinite', trigger:'Star display / result screen',
+      cssClass:'.animate-star-rotate', framerProps:'animate={{ rotate:360 }} transition={{ duration:3, repeat:Infinity, ease:"linear" }}',
+      notes:'Pure linear rotation. Scale pulse at 0.25× and 0.75× adds life. Use drop-shadow(0 0 8px rgba(255,213,74,0.6)) for glow.',
+      weight:'light',
+      preview: () => <PreviewStarRotate/>,
+    },
+    {
+      id:'treasure-open', name:'Treasure Chest Open', category:'reward',
+      description:'Chest scaleY compresses then overshoots 1.0 as the lid "hops" open. Spring then settle.',
+      duration:'1.1s', easing:'Spring Bouncy', easingCss:'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      loop:'None', trigger:'Reward collected · Tap to open',
+      cssClass:'.animate-treasure-open', framerProps:'animate={{ scaleY:[1,0.82,1.14,0.94,1.04,1], rotate:[0,-3,3,-1.5,1,0] }} transition={{ duration:1.1 }}',
+      notes:'Pair with a particle burst (3–5 star/coin particles) shooting upward from centre on open. brightness(1.2) at peak for glow.',
+      weight:'expressive',
+      preview: () => <PreviewTreasure/>,
+    },
+    {
+      id:'level-complete', name:'Level Complete', category:'reward',
+      description:'Cascading ring pulse from trophy, followed by confetti and mascot wave. Peak delight moment.',
+      duration:'Rings: 1.4s · Full sequence: 3.5s', easing:'Ease Out (rings)', easingCss:'ease-out',
+      loop:'Rings: 1× · Confetti: 28 particles', trigger:'All questions complete', delay:'Ring stagger +0.18s per ring',
+      cssClass:'@keyframes level-complete-ring + .animate-bounce-in + .animate-confetti-fly', framerProps:'Multiple variants: ringVariant, trophyVariant, confettiVariant',
+      notes:'Sequence: screen flash (0.7s) → rings radiate → trophy bounces → confetti bursts → mascot waves → stat cards stagger in. Total 3.5s before interactive.',
+      weight:'expressive',
+      preview: () => <PreviewLevelComplete k={0}/>,
+    },
+    {
+      id:'reward-burst', name:'Reward Explosion', category:'reward',
+      description:'Radial particle burst for XP/coins gained. 8 particles at 45° intervals, fade and fly outward.',
+      duration:'0.9s', easing:'Ease Out', easingCss:'ease-out',
+      loop:'None', trigger:'Correct answer · XP milestone',
+      cssClass:'.animate-reward-burst (per particle)', framerProps:'particles.map(p => animate({ x, y, opacity:[1,0], scale:[1,0.4] })) with 40ms stagger',
+      notes:'8 particles at 45° increments, sizes 6–10px, mix circles and squares. translateY(-60px) arc. Stagger 40ms. Centre burst origin.',
+      weight:'expressive',
+      preview: () => <PreviewRewardBurst k={0}/>,
+    },
+  ]
+}
+
+// ── Supporting panels ─────────────────────────────────────────────────────────
+
+function MotionPrinciples() {
+  const principles = [
+    { icon:'🌊', title:'Continuity',      color:'#6BCBFF', desc:'Ambient loops run at all times at ultra-low opacity. Children should feel the app is alive, not waiting.' },
+    { icon:'⚡', title:'Instant Feedback', color:'#A78BFA', desc:'Tap response ≤50ms perceived latency. Use CSS transitions for anything triggered by input — never wait for JS.' },
+    { icon:'🎯', title:'Purposeful Weight',color:'#4FD37A', desc:'Ultra-light: ambient. Light: hover. Medium: feedback. Expressive: reward. Expressive is reserved for earned moments only.' },
+    { icon:'🏀', title:'Squash & Stretch', color:'#FFB347', desc:"Follow Disney's 12 principles. Coins, blocks, and mascot should squash at landing and stretch at apex. Even 5% deformation adds organic life." },
+    { icon:'🌱', title:'Spring Physics',   color:'#FFD54A', desc:'Prefer spring easings over bezier curves for anything that bounces. cubic-bezier(0.34,1.56,0.64,1) is the MathBlocks signature spring.' },
+    { icon:'❤️', title:'Never Punish',     color:'#FF7B7B', desc:'Wrong answers get a gentle wiggle (±8°), warm coral tone, and encouraging message. Never harsh reds, sharp stops, or rapid flashes.' },
+  ]
+  return (
+    <div style={{ background:'rgba(15,23,42,0.72)', backdropFilter:'blur(20px)', borderRadius:24, overflow:'hidden', border:'1px solid rgba(255,255,255,0.07)', boxShadow:'0 8px 40px rgba(0,0,0,0.35)' }}>
+      <div style={{ padding:'18px 20px 14px', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:18, color:'#F1F5F9' }}>Motion Principles</div>
+        <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:12, color:'rgba(100,116,139,1)', marginTop:3 }}>Apple quality · Nintendo delight · Child-safe</div>
+      </div>
+      {principles.map((p, i) => (
+        <div key={p.title} style={{ display:'flex', gap:14, padding:'14px 20px', borderBottom: i<principles.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+          <div style={{ width:38, height:38, borderRadius:12, flexShrink:0, background:`${p.color}1A`, border:`1px solid ${p.color}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>{p.icon}</div>
+          <div>
+            <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:14, color:p.color, marginBottom:3 }}>{p.title}</div>
+            <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:12, color:'rgba(148,163,184,0.8)', lineHeight:1.55 }}>{p.desc}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function TimingCheatsheet() {
+  const rows = [
+    { range:'0 – 100ms',    label:'Instant',      desc:'Press feedback, hover micro-transitions',      color:'#4FD37A' },
+    { range:'100 – 200ms',  label:'Fast',          desc:'Pop animations, tap scale, blink',             color:'#6BCBFF' },
+    { range:'200 – 400ms',  label:'Quick',         desc:'Card hover, button press, answer pop-in',      color:'#A78BFA' },
+    { range:'400 – 800ms',  label:'Comfortable',   desc:'Star award, badge unlock, bounce-in entries',  color:'#FFD54A' },
+    { range:'800ms – 1.4s', label:'Expressive',    desc:'Coin bounce, treasure open, XP bar fill',      color:'#FFB347' },
+    { range:'1.4s – 3s',    label:'Cinematic',     desc:'Level complete sequence, screen entries',       color:'#FF7B7B' },
+    { range:'3s+',          label:'Ambient Loop',  desc:'Float, cloud drift, sparkle twinkle',          color:'rgba(148,163,184,0.5)' },
+  ]
+  return (
+    <div style={{ background:'rgba(15,23,42,0.72)', backdropFilter:'blur(20px)', borderRadius:24, overflow:'hidden', border:'1px solid rgba(255,255,255,0.07)', boxShadow:'0 8px 40px rgba(0,0,0,0.35)' }}>
+      <div style={{ padding:'18px 20px 14px', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:18, color:'#F1F5F9' }}>Timing Reference</div>
+        <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:12, color:'rgba(100,116,139,1)', marginTop:3 }}>When to use which duration</div>
+      </div>
+      {rows.map((r, i) => (
+        <div key={r.range} style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 20px', borderBottom: i<rows.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+          <div style={{ width:88, flexShrink:0, fontFamily:'monospace', fontSize:11, color:r.color, background:`${r.color}14`, borderRadius:7, padding:'3px 7px', textAlign:'center', border:`1px solid ${r.color}25` }}>{r.range}</div>
+          <div>
+            <div style={{ fontFamily:'Nunito', fontWeight:800, fontSize:13, color:'#F1F5F9', lineHeight:1 }}>{r.label}</div>
+            <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:11.5, color:'rgba(148,163,184,0.75)', marginTop:2 }}>{r.desc}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function EasingCheatsheet() {
+  const easings = [
+    { name:'Spring Bouncy', css:'cubic-bezier(0.34, 1.56, 0.64, 1)', use:'Rewards, unlocks, badge entry',    color:'#A78BFA', key:'spring-bouncy' },
+    { name:'Spring Gentle', css:'cubic-bezier(0.25, 0.46, 0.45, 0.94)', use:'Screen enter, card hover',     color:'#4FD37A', key:'spring-gentle' },
+    { name:'Spring Snappy', css:'cubic-bezier(0.4, 1.3, 0.6, 1)',   use:'Micro-tap, quick feedback',       color:'#6BCBFF', key:'spring-snappy' },
+    { name:'Decelerate',    css:'cubic-bezier(0, 0, 0.2, 1)',        use:'Elements entering from off-screen', color:'#FFB347', key:'decelerate' },
+    { name:'Accelerate',    css:'cubic-bezier(0.4, 0, 1, 1)',        use:'Elements leaving / fade outs',    color:'#FF7B7B', key:'accelerate' },
+    { name:'Ease In-Out',   css:'ease-in-out',                       use:'Ambient loops, mascot float',     color:'#FFD54A', key:'ease-in-out' },
+    { name:'Linear',        css:'linear',                            use:'Star rotation, spinner, progress', color:'rgba(148,163,184,0.7)', key:'linear' },
+  ]
+  return (
+    <div style={{ background:'rgba(15,23,42,0.72)', backdropFilter:'blur(20px)', borderRadius:24, overflow:'hidden', border:'1px solid rgba(255,255,255,0.07)', boxShadow:'0 8px 40px rgba(0,0,0,0.35)' }}>
+      <div style={{ padding:'18px 20px 14px', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:18, color:'#F1F5F9' }}>Easing Library</div>
+        <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:12, color:'rgba(100,116,139,1)', marginTop:3 }}>Named easings used across MathBlocks</div>
+      </div>
+      {easings.map((e, i) => (
+        <div key={e.name} style={{ display:'flex', alignItems:'center', gap:14, padding:'12px 18px', borderBottom: i<easings.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+          <EasingCurve css={e.key} color={e.color} size={44}/>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontFamily:'Nunito', fontWeight:800, fontSize:13, color:e.color, marginBottom:2 }}>{e.name}</div>
+            <code style={{ fontFamily:'monospace', fontSize:10, color:'rgba(148,163,184,0.65)', background:'rgba(0,0,0,0.2)', borderRadius:5, padding:'2px 6px', display:'block', marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{e.css}</code>
+            <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:11, color:'rgba(148,163,184,0.65)' }}>{e.use}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Main screen ───────────────────────────────────────────────────────────────
+
+function MotionDesignScreen({ onBack }: { onBack: () => void }) {
+  const [activeFilter, setActiveFilter] = React.useState<MotionCategory | 'all' | 'principles'>('all')
+  const specs = React.useMemo(() => buildSpecs(), [])
+
+  const filters: { id: MotionCategory | 'all' | 'principles'; label: string; emoji: string }[] = [
+    { id:'all',        label:'All',        emoji:'✦' },
+    { id:'principles', label:'Principles', emoji:'📐' },
+    { id:'ambient',    label:'Ambient',    emoji:'🌊' },
+    { id:'feedback',   label:'Feedback',   emoji:'👆' },
+    { id:'progress',   label:'Progress',   emoji:'📈' },
+    { id:'character',  label:'Character',  emoji:'🦊' },
+    { id:'transition', label:'Transition', emoji:'✨' },
+    { id:'reward',     label:'Reward',     emoji:'🎉' },
+  ]
+
+  const filtered = activeFilter === 'all' || activeFilter === 'principles' ? specs : specs.filter(s => s.category === activeFilter)
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'linear-gradient(180deg,#0F172A 0%,#1E1B4B 35%,#12172E 70%,#0B1120 100%)' }}>
+      {/* Ambient stars */}
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0, overflow:'hidden' }}>
+        <div style={{ position:'absolute', width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle,rgba(167,139,250,0.07) 0%,transparent 70%)', top:'5%', left:'-8%', animation:'cloud-drift 16s ease-in-out infinite' }}/>
+        <div style={{ position:'absolute', width:220, height:220, borderRadius:'50%', background:'radial-gradient(circle,rgba(99,102,241,0.05) 0%,transparent 70%)', top:'45%', right:'-6%', animation:'cloud-drift 20s 5s ease-in-out infinite' }}/>
+        <div style={{ position:'absolute', width:180, height:180, borderRadius:'50%', background:'radial-gradient(circle,rgba(79,211,122,0.04) 0%,transparent 70%)', bottom:'10%', left:'15%', animation:'cloud-drift 14s 8s ease-in-out infinite' }}/>
+        {Array.from({length:16},(_,i) => (
+          <div key={i} className="animate-sparkle" style={{ position:'absolute', top:`${(i*41+3)%94}%`, left:`${(i*57+9)%91}%`, width:2+(i%3), height:2+(i%3), borderRadius:'50%', background:['#A78BFA','#6BCBFF','#FFD54A','#4FD37A','#fff'][i%5], animationDelay:`${(i*0.45)%4}s`, animationDuration:`${2.5+(i%4)*0.6}s` }}/>
+        ))}
+      </div>
+
+      {/* Sticky header */}
+      <div style={{ position:'sticky', top:0, zIndex:50, background:'rgba(15,23,42,0.9)', backdropFilter:'blur(24px)', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px 10px' }}>
+          <button onClick={onBack} style={{ background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(148,163,184,0.9)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:17, color:'#F1F5F9', lineHeight:1 }}>✦ Motion Design</div>
+            <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:11, color:'rgba(100,116,139,1)', marginTop:2 }}>MathBlocks · {specs.length} animation specs</div>
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(79,211,122,0.12)', border:'1px solid rgba(79,211,122,0.25)', borderRadius:999, padding:'4px 10px' }}>
+            <div style={{ width:6, height:6, borderRadius:'50%', background:'#4FD37A', boxShadow:'0 0 6px #4FD37A' }}/>
+            <span style={{ fontFamily:'Nunito', fontWeight:800, fontSize:11, color:'#4FD37A' }}>CSS ready</span>
+          </div>
+        </div>
+        <div style={{ display:'flex', overflowX:'auto', padding:'0 12px 10px', gap:6, scrollbarWidth:'none' }}>
+          {filters.map(f => {
+            const isActive = activeFilter === f.id
+            const catM = f.id !== 'all' && f.id !== 'principles' ? CAT_META[f.id as MotionCategory] : null
+            return (
+              <button key={f.id} onClick={() => setActiveFilter(f.id)} style={{ flexShrink:0, display:'flex', alignItems:'center', gap:5, padding:'6px 13px', background: isActive ? (catM ? catM.bg : 'rgba(167,139,250,0.15)') : 'rgba(255,255,255,0.04)', border:`1px solid ${isActive ? (catM ? catM.color+'44' : 'rgba(167,139,250,0.3)') : 'rgba(255,255,255,0.07)'}`, borderRadius:999, cursor:'pointer', fontFamily:'Nunito', fontWeight:800, fontSize:12.5, color: isActive ? (catM ? catM.color : '#C4ADFC') : 'rgba(148,163,184,0.7)', transition:'all 0.18s' }}>
+                <span>{f.emoji}</span>{f.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ flex:1, overflowY:'auto', padding:'16px 16px 40px', position:'relative', zIndex:1 }}>
+
+        {/* Hero + principles panels */}
+        {(activeFilter === 'all' || activeFilter === 'principles') && (
+          <div style={{ display:'flex', flexDirection:'column', gap:16, marginBottom:24 }}>
+            {/* Hero banner */}
+            <div style={{ background:'linear-gradient(135deg,rgba(167,139,250,0.18) 0%,rgba(99,102,241,0.12) 50%,rgba(79,211,122,0.1) 100%)', borderRadius:24, padding:'22px 20px', border:'1px solid rgba(167,139,250,0.2)', boxShadow:'0 8px 40px rgba(0,0,0,0.3)' }}>
+              <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:22, color:'#F1F5F9', lineHeight:1.15, marginBottom:8 }}>Motion makes<br/>children feel magic.</div>
+              <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:13, color:'rgba(148,163,184,0.85)', lineHeight:1.6, marginBottom:16 }}>Every animation here is intentional. Ambient loops keep the world alive. Feedback confirms actions instantly. Rewards celebrate the child, never the score.</div>
+              <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                {[{l:`${specs.length} specs`,c:'#A78BFA'},{l:'7 easings',c:'#4FD37A'},{l:'4 weight levels',c:'#FFD54A'},{l:'CSS + Framer',c:'#6BCBFF'}].map(c=>(
+                  <div key={c.l} style={{ fontFamily:'Nunito', fontWeight:800, fontSize:12, color:c.c, background:`${c.c}14`, border:`1px solid ${c.c}30`, borderRadius:999, padding:'4px 12px' }}>{c.l}</div>
+                ))}
+              </div>
+            </div>
+            <MotionPrinciples/>
+            <TimingCheatsheet/>
+            <EasingCheatsheet/>
+            {activeFilter === 'principles' && (
+              <div style={{ background:'rgba(15,23,42,0.72)', borderRadius:20, padding:'16px 18px', border:'1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:15, color:'#F1F5F9', marginBottom:12 }}>Performance Budget</div>
+                {[
+                  { label:'Max simultaneous CSS animations', value:'8–12', note:'Beyond this, use requestAnimationFrame or reduce ambient loops' },
+                  { label:'Prefer transform + opacity only', value:'Always', note:'These are GPU-composited — no layout recalculation on each frame' },
+                  { label:'Never animate layout properties', value:'width/height/margin', note:'Triggers layout. Use transform:scale() instead' },
+                  { label:'will-change hint', value:'transform, opacity', note:'Add only to frequently animating elements. Overuse wastes GPU memory' },
+                  { label:'Reduced motion support', value:'prefers-reduced-motion', note:'All ambient loops and bursts must respect this media query' },
+                ].map((r,i)=>(
+                  <div key={i} style={{ marginBottom:12, paddingBottom:12, borderBottom:i<4?'1px solid rgba(255,255,255,0.04)':'none' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8, marginBottom:3 }}>
+                      <span style={{ fontFamily:'Nunito', fontWeight:700, fontSize:12.5, color:'rgba(148,163,184,0.85)' }}>{r.label}</span>
+                      <code style={{ fontFamily:'monospace', fontSize:11, color:'#818CF8', background:'rgba(99,102,241,0.12)', borderRadius:5, padding:'2px 6px', flexShrink:0 }}>{r.value}</code>
+                    </div>
+                    <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:11, color:'rgba(100,116,139,0.9)', lineHeight:1.5 }}>{r.note}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Spec cards */}
+        {activeFilter !== 'principles' && (
+          <>
+            {activeFilter !== 'all' && (
+              <div style={{ marginBottom:14, display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ fontFamily:'Nunito', fontWeight:900, fontSize:22, color:CAT_META[activeFilter as MotionCategory]?.color ?? '#F1F5F9' }}>
+                  {CAT_META[activeFilter as MotionCategory]?.emoji} {CAT_META[activeFilter as MotionCategory]?.label}
+                </div>
+                <div style={{ fontFamily:'Nunito', fontWeight:700, fontSize:12, color:'rgba(100,116,139,1)', background:'rgba(255,255,255,0.05)', borderRadius:999, padding:'3px 10px' }}>
+                  {filtered.length} spec{filtered.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+            )}
+            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+              {filtered.map(spec => (
+                <MotionSpecCard key={spec.id} spec={spec}/>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

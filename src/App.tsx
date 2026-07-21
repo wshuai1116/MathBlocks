@@ -913,11 +913,13 @@ export default function App() {
   const [showPractice, setShowPractice] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [resultData, setResultData] = useState<ResultData | null>(null)
+  const [showComponents, setShowComponents] = useState(false)
 
   const handleNavSelect = (id: string) => {
     setShowAdventureMap(false)
     setShowPractice(false)
     setShowResult(false)
+    setShowComponents(false)
     setTab(id as Tab)
   }
   const openPractice = () => { setShowResult(false); setShowPractice(true) }
@@ -926,7 +928,9 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', background: COLORS.neutral, fontFamily: 'Nunito, system-ui, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ width: '100%', maxWidth: 430, minHeight: '100vh', background: COLORS.neutral, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        {showResult && resultData ? (
+        {showComponents ? (
+          <ComponentLibraryScreen onBack={() => setShowComponents(false)} />
+        ) : showResult && resultData ? (
           <ResultScreen data={resultData} onPlayAgain={openPractice} onContinue={() => { setShowResult(false); setShowPractice(false); setTab('home') }} onNavSelect={handleNavSelect} />
         ) : showPractice ? (
           <PracticeScreen onBack={() => setShowPractice(false)} onComplete={openResult} onNavSelect={handleNavSelect} />
@@ -939,7 +943,7 @@ export default function App() {
               {tab === 'home' && <HomeTab onOpenAdventureMap={() => setShowAdventureMap(true)} onOpenPractice={openPractice} />}
               {tab === 'learn' && <LearnTab onStartLesson={openPractice} />}
               {tab === 'play' && <PlayTab onStartPractice={openPractice} />}
-              {tab === 'me' && <MeTab />}
+              {tab === 'me' && <MeTab onOpenComponents={() => setShowComponents(true)} />}
             </div>
             <BottomNavBar active={tab} onSelect={handleNavSelect} />
           </>
@@ -1995,7 +1999,7 @@ function PlayTab({ onStartPractice }: { onStartPractice?: () => void }) {
 
 // ─── Me Tab ───────────────────────────────────────────────────────────────────
 
-function MeTab() {
+function MeTab({ onOpenComponents }: { onOpenComponents?: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <ProfileCard name="Maya J." level={12} xp={680} coins={1240} streak={7} />
@@ -2042,6 +2046,31 @@ function MeTab() {
         <CoinDisplay amount={250} size="md" />
         <CoinDisplay amount={1240} size="lg" />
       </div>
+
+      <SectionHeader title="Developer" />
+      <button
+        onClick={onOpenComponents}
+        style={{
+          width: '100%', padding: '14px 20px',
+          background: 'linear-gradient(135deg, #1E1B4B 0%, #2D1B69 100%)',
+          border: 'none', borderRadius: 18, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          boxShadow: '0 4px 0 0 #0F0A30, 0 6px 24px rgba(30,27,78,0.3)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 12,
+            background: 'rgba(167,139,250,0.25)', border: '1px solid rgba(167,139,250,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+          }}>🧩</div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 15, color: '#fff' }}>Component Library</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11.5, color: 'rgba(167,139,250,0.75)' }}>Design System · All variants</div>
+          </div>
+        </div>
+        <ArrowRightIcon size={16} color="rgba(167,139,250,0.7)" />
+      </button>
     </div>
   )
 }
@@ -3894,6 +3923,1223 @@ function ResultScreen({
       </div>
 
       <BottomNavBar active="learn" onSelect={onNavSelect} />
+    </div>
+  )
+}
+
+// ─── Component Library Screen ─────────────────────────────────────────────────
+
+// ── Sub-components used only in the library ──────────────────────────────────
+
+function DSSection({ title, subtitle, children }: {
+  title: string; subtitle?: string; children: React.ReactNode
+}) {
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{
+        padding: '18px 20px 10px',
+        borderBottom: '1px solid rgba(167,139,250,0.14)',
+        marginBottom: 0,
+      }}>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 18, color: '#1E1B4B', lineHeight: 1 }}>
+          {title}
+        </div>
+        {subtitle && (
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: 'rgba(76,29,149,0.55)', marginTop: 3 }}>
+            {subtitle}
+          </div>
+        )}
+      </div>
+      <div style={{ padding: '16px 20px' }}>{children}</div>
+    </div>
+  )
+}
+
+function DSRow({ label, children, wrap = false }: {
+  label: string; children: React.ReactNode; wrap?: boolean
+}) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{
+        fontFamily: 'Nunito', fontWeight: 800, fontSize: 11,
+        color: 'rgba(76,29,149,0.5)', letterSpacing: '0.08em', textTransform: 'uppercase',
+        marginBottom: 10,
+      }}>
+        {label}
+      </div>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        flexWrap: wrap ? 'wrap' : 'nowrap',
+      }}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function DSChip({ label, color = 'rgba(167,139,250,0.18)', textColor = '#4C1D95' }: {
+  label: string; color?: string; textColor?: string
+}) {
+  return (
+    <div style={{
+      fontFamily: 'Nunito', fontWeight: 700, fontSize: 11,
+      background: color, color: textColor,
+      borderRadius: 999, padding: '3px 9px',
+      border: '1px solid rgba(167,139,250,0.2)',
+    }}>
+      {label}
+    </div>
+  )
+}
+
+function DSCard({ children, label }: { children: React.ReactNode; label?: string }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+      {children}
+      {label && (
+        <div style={{
+          fontFamily: 'Nunito', fontWeight: 700, fontSize: 11,
+          color: 'rgba(76,29,149,0.5)', textAlign: 'center', lineHeight: 1.3,
+        }}>
+          {label}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Block overlays for states
+function BlockState({
+  children, state,
+}: {
+  children: React.ReactNode
+  state: 'default' | 'selected' | 'hover' | 'pressed' | 'disabled' | 'correct' | 'wrong' | 'locked'
+}) {
+  const overlay: Record<string, React.CSSProperties> = {
+    default:  {},
+    selected: { outline: '3px solid #FFD54A', outlineOffset: 3, borderRadius: 18 },
+    hover:    { transform: 'scale(1.1) translateY(-3px)', filter: 'brightness(1.08)' },
+    pressed:  { transform: 'translateY(4px)', filter: 'brightness(0.9)' },
+    disabled: { opacity: 0.38, filter: 'grayscale(1)', cursor: 'not-allowed' },
+    correct:  { filter: 'drop-shadow(0 0 10px rgba(79,211,122,0.75))' },
+    wrong:    { filter: 'drop-shadow(0 0 10px rgba(255,123,123,0.75))', animation: 'wiggle 0.4s ease-in-out' },
+    locked:   { opacity: 0.28, filter: 'grayscale(1)', cursor: 'not-allowed' },
+  }
+  return (
+    <div style={{ transition: 'all 0.15s', ...overlay[state] }}>
+      {children}
+    </div>
+  )
+}
+
+// Simulated inputs
+function DSInput({ placeholder, type = 'text', numeric = false }: {
+  placeholder?: string; type?: string; numeric?: boolean
+}) {
+  const [val, setVal] = React.useState('')
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      {numeric && (
+        <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', zIndex: 1 }}>
+          <NumberBlock value={val ? parseInt(val) || 0 : 0} size="sm" />
+        </div>
+      )}
+      <input
+        type={type}
+        value={val}
+        onChange={e => setVal(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          width: '100%', boxSizing: 'border-box',
+          padding: numeric ? '12px 14px 12px 58px' : '12px 16px',
+          fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#1E1B4B',
+          background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
+          border: '1.5px solid rgba(167,139,250,0.3)', borderRadius: 16,
+          outline: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+          transition: 'border-color 0.2s',
+        }}
+        onFocus={e => (e.target.style.borderColor = '#A78BFA')}
+        onBlur={e => (e.target.style.borderColor = 'rgba(167,139,250,0.3)')}
+      />
+    </div>
+  )
+}
+
+function DSSearchInput() {
+  const [val, setVal] = React.useState('')
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }}>
+        <SearchIcon size={16} color="rgba(76,29,149,0.45)" />
+      </div>
+      <input
+        value={val}
+        onChange={e => setVal(e.target.value)}
+        placeholder="Search lessons, topics..."
+        style={{
+          width: '100%', boxSizing: 'border-box',
+          padding: '12px 16px 12px 42px',
+          fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#1E1B4B',
+          background: 'rgba(255,255,255,0.9)',
+          border: '1.5px solid rgba(167,139,250,0.25)', borderRadius: 999,
+          outline: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+          transition: 'border-color 0.2s',
+        }}
+        onFocus={e => (e.target.style.borderColor = '#A78BFA')}
+        onBlur={e => (e.target.style.borderColor = 'rgba(167,139,250,0.25)')}
+      />
+      {val && (
+        <button onClick={() => setVal('')} style={{
+          position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+          background: 'rgba(167,139,250,0.2)', border: 'none', borderRadius: '50%',
+          width: 22, height: 22, cursor: 'pointer', fontSize: 12,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#4C1D95', fontWeight: 900,
+        }}>✕</button>
+      )}
+    </div>
+  )
+}
+
+// Circular Progress
+function DSCircularProgress({ pct, color = COLORS.purple, size = 80, label }: {
+  pct: number; color?: string; size?: number; label?: string
+}) {
+  const r = (size - 10) / 2
+  const circ = 2 * Math.PI * r
+  const offset = circ * (1 - pct / 100)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      <div style={{ position: 'relative', width: size, height: size }}>
+        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(167,139,250,0.15)" strokeWidth={8} />
+          <circle
+            cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={8}
+            strokeLinecap="round"
+            strokeDasharray={circ} strokeDashoffset={offset}
+            style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.34,1.56,0.64,1)' }}
+          />
+        </svg>
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: 'Nunito', fontWeight: 900, fontSize: size * 0.2, color,
+        }}>
+          {pct}%
+        </div>
+      </div>
+      {label && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11.5, color: 'rgba(76,29,149,0.6)', textAlign: 'center' }}>{label}</div>}
+    </div>
+  )
+}
+
+// Inline Dialog card
+function DSDialog({ type }: { type: 'success' | 'failure' | 'reward' | 'confirm' }) {
+  const configs = {
+    success: {
+      emoji: '🎉', title: 'Correct!', body: 'Amazing work! +50 XP +15 🪙',
+      bg: 'linear-gradient(135deg, #4FD37A 0%, #35B862 100%)',
+      shadow: 'rgba(79,211,122,0.35)',
+    },
+    failure: {
+      emoji: '😅', title: 'Not quite!', body: "That's okay. Try again! 💪",
+      bg: 'linear-gradient(135deg, #FF7B7B 0%, #E85A5A 100%)',
+      shadow: 'rgba(255,123,123,0.35)',
+    },
+    reward: {
+      emoji: '🎁', title: 'Reward Unlocked!', body: 'You earned the Gold Star badge!',
+      bg: 'linear-gradient(135deg, #FFD54A 0%, #FFB347 100%)',
+      shadow: 'rgba(255,213,74,0.35)',
+    },
+    confirm: {
+      emoji: '🤔', title: 'Are you sure?', body: 'This will reset your progress.',
+      bg: 'linear-gradient(135deg, #A78BFA 0%, #6366F1 100%)',
+      shadow: 'rgba(167,139,250,0.35)',
+    },
+  }
+  const c = configs[type]
+  return (
+    <div style={{
+      borderRadius: 22, overflow: 'hidden',
+      boxShadow: `0 8px 32px ${c.shadow}`,
+      border: '1.5px solid rgba(255,255,255,0.4)',
+    }}>
+      {/* Header strip */}
+      <div style={{ background: c.bg, padding: '16px 18px 14px', textAlign: 'center' }}>
+        <div style={{ fontSize: 28, lineHeight: 1, marginBottom: 4 }}>{c.emoji}</div>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 17, color: '#fff' }}>{c.title}</div>
+      </div>
+      {/* Body */}
+      <div style={{ background: 'rgba(255,255,255,0.94)', padding: '12px 18px 14px' }}>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: COLORS.text, textAlign: 'center', marginBottom: 12 }}>
+          {c.body}
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button style={{
+            flex: 1, padding: '9px 0',
+            background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)',
+            borderRadius: 12, fontFamily: 'Nunito', fontWeight: 800, fontSize: 13,
+            color: COLORS.purpleDark, cursor: 'pointer',
+          }}>Cancel</button>
+          <button style={{
+            flex: 2, padding: '9px 0',
+            background: c.bg, border: 'none', borderRadius: 12,
+            fontFamily: 'Nunito', fontWeight: 900, fontSize: 13, color: '#fff', cursor: 'pointer',
+          }}>
+            {type === 'confirm' ? 'Yes, reset' : type === 'reward' ? 'Collect!' : type === 'failure' ? 'Try again' : 'Continue'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Diamond / treasure icons (inline SVG shapes for rewards section)
+function DiamondIcon({ size = 28, color = '#6BCBFF' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+      <polygon points="14,2 26,10 14,26 2,10" fill={color} opacity={0.85} />
+      <polygon points="14,2 26,10 14,14" fill="rgba(255,255,255,0.35)" />
+      <polygon points="2,10 14,14 14,26" fill="rgba(0,0,0,0.12)" />
+      <polygon points="14,2 26,10 2,10" fill="rgba(255,255,255,0.22)" />
+    </svg>
+  )
+}
+
+// Reward token (Coin / Star / Diamond / XP / Chest displayed as collectible chips)
+function RewardToken({ type, value, size = 'md' }: {
+  type: 'coin' | 'star' | 'diamond' | 'xp' | 'chest'
+  value?: number | string
+  size?: 'sm' | 'md' | 'lg'
+}) {
+  const dims = { sm: { outer: 44, inner: 28, font: 10 }, md: { outer: 58, inner: 36, font: 12 }, lg: { outer: 76, inner: 48, font: 14 } }
+  const d = dims[size]
+
+  const config = {
+    coin:    { bg: 'linear-gradient(135deg, #FFD54A 0%, #FFB347 100%)', shadow: '#C9930D', icon: <CoinIcon size={d.inner * 0.62} />, label: value ? `×${value}` : '🪙' },
+    star:    { bg: 'linear-gradient(135deg, #FFF4C8 0%, #FFE082 100%)', shadow: '#E6BB2A', icon: <StarIcon size={d.inner * 0.62} filled color="#FFD54A" />, label: value ? `×${value}` : '⭐' },
+    diamond: { bg: 'linear-gradient(135deg, #DBEAFE 0%, #BAE6FF 100%)', shadow: '#3BAEE5', icon: <DiamondIcon size={d.inner * 0.72} color="#6BCBFF" />, label: value ? `×${value}` : '💎' },
+    xp:      { bg: 'linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)', shadow: '#8B5CF6', icon: <LightningIcon size={d.inner * 0.62} color="#8B5CF6" />, label: value ? `+${value} XP` : '⚡' },
+    chest:   { bg: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)', shadow: '#D97706', icon: <span style={{ fontSize: d.inner * 0.72 }}>📦</span>, label: value ? String(value) : '🎁' },
+  }
+
+  const cfg = config[type]
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+      <div style={{
+        width: d.outer, height: d.outer, borderRadius: Math.round(d.outer * 0.33),
+        background: cfg.bg,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: `0 ${Math.round(d.outer * 0.09)}px 0 0 ${cfg.shadow}, 0 ${Math.round(d.outer * 0.12)}px ${d.outer}px rgba(0,0,0,0.12)`,
+        position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: '45%',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.45) 0%, transparent 100%)',
+          borderRadius: `${Math.round(d.outer * 0.33)}px ${Math.round(d.outer * 0.33)}px 0 0`,
+        }} />
+        {cfg.icon}
+      </div>
+      <div style={{
+        fontFamily: 'Nunito', fontWeight: 800, fontSize: 11,
+        color: '#1E1B4B', textAlign: 'center',
+      }}>{cfg.label}</div>
+    </div>
+  )
+}
+
+// XP Badge
+function XPBadge({ xp, size = 'md' }: { xp: number; size?: 'sm' | 'md' | 'lg' }) {
+  const pad = { sm: '6px 14px', md: '9px 20px', lg: '12px 26px' }
+  const fs =  { sm: 14, md: 17, lg: 22 }
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      background: 'linear-gradient(135deg, #A78BFA 0%, #6366F1 100%)',
+      borderRadius: 999, padding: pad[size],
+      boxShadow: '0 4px 0 0 #4C1D95, 0 6px 18px rgba(167,139,250,0.4)',
+    }}>
+      <LightningIcon size={fs[size] - 2} color="#fff" />
+      <span style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: fs[size], color: '#fff', lineHeight: 1 }}>
+        +{xp} XP
+      </span>
+    </div>
+  )
+}
+
+// Loading state
+function LoadingSpinner({ size = 24, color = COLORS.purple }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}>
+      <circle cx="12" cy="12" r="9" stroke={`${color}33`} strokeWidth="3" />
+      <path d="M12 3a9 9 0 0 1 9 9" stroke={color} strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+// Token row helper
+function TokenRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{
+        fontFamily: 'Nunito', fontWeight: 800, fontSize: 10.5,
+        color: 'rgba(76,29,149,0.45)', letterSpacing: '0.08em', textTransform: 'uppercase',
+        marginBottom: 8,
+      }}>
+        {label}
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function ColorSwatch({ color, name }: { color: string; name: string }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+      <div style={{
+        width: 44, height: 44, borderRadius: 14,
+        background: color,
+        boxShadow: '0 3px 10px rgba(0,0,0,0.12)',
+        border: '2px solid rgba(255,255,255,0.8)',
+      }} />
+      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 9.5, color: 'rgba(76,29,149,0.55)', textAlign: 'center', lineHeight: 1.3, maxWidth: 44 }}>
+        {name}
+      </div>
+    </div>
+  )
+}
+
+// Main component library screen
+function ComponentLibraryScreen({ onBack }: { onBack: () => void }) {
+  const [activeTab, setActiveTab] = React.useState<'blocks' | 'buttons' | 'cards' | 'progress' | 'rewards' | 'nav' | 'dialogs' | 'inputs' | 'tokens'>('blocks')
+
+  const tabs: { id: typeof activeTab; label: string; emoji: string }[] = [
+    { id: 'blocks',  label: 'Blocks',   emoji: '🧱' },
+    { id: 'buttons', label: 'Buttons',  emoji: '⬛' },
+    { id: 'cards',   label: 'Cards',    emoji: '📋' },
+    { id: 'progress',label: 'Progress', emoji: '📊' },
+    { id: 'rewards', label: 'Rewards',  emoji: '🏆' },
+    { id: 'nav',     label: 'Nav',      emoji: '🧭' },
+    { id: 'dialogs', label: 'Dialogs',  emoji: '💬' },
+    { id: 'inputs',  label: 'Inputs',   emoji: '⌨️' },
+    { id: 'tokens',  label: 'Tokens',   emoji: '🎨' },
+  ]
+
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', minHeight: '100vh',
+      background: 'linear-gradient(180deg, #EDE9FE 0%, #F5F3FF 40%, #F9F8FF 100%)',
+    }}>
+      {/* ── Header ──────────────────────────────────────────────────── */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(167,139,250,0.15)',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px 10px' }}>
+          <button onClick={onBack} style={{
+            background: COLORS.neutral, border: 'none', borderRadius: 12,
+            width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', flexShrink: 0,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COLORS.text} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 17, color: '#1E1B4B', lineHeight: 1 }}>
+              🧩 Component Library
+            </div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(76,29,149,0.55)', marginTop: 2 }}>
+              MathBlocks Design System · v1.0
+            </div>
+          </div>
+          <DSChip label="Production" color="rgba(79,211,122,0.18)" textColor="#15803D" />
+        </div>
+
+        {/* Tab bar */}
+        <div style={{ display: 'flex', overflowX: 'auto', padding: '0 12px 10px', gap: 6, scrollbarWidth: 'none' }}>
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
+              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
+              padding: '6px 13px',
+              background: activeTab === t.id
+                ? 'linear-gradient(135deg, #A78BFA 0%, #6366F1 100%)'
+                : 'rgba(167,139,250,0.1)',
+              border: 'none', borderRadius: 999, cursor: 'pointer',
+              fontFamily: 'Nunito', fontWeight: 800, fontSize: 12.5,
+              color: activeTab === t.id ? '#fff' : 'rgba(76,29,149,0.7)',
+              boxShadow: activeTab === t.id ? '0 3px 10px rgba(167,139,250,0.4)' : 'none',
+              transition: 'all 0.18s',
+            }}>
+              <span>{t.emoji}</span>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Content ─────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 32 }}>
+
+        {/* ═══════════════ BLOCKS ═════════════════════════════════════ */}
+        {activeTab === 'blocks' && (
+          <div>
+            <DSSection title="Number Blocks" subtitle="Component · 10 values × 8 states · sizes sm/md/lg/xl">
+
+              <DSRow label="All values — default">
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {[0,1,2,3,4,5,6,7,8,9].map(n => (
+                    <DSCard key={n} label={String(n)}>
+                      <NumberBlock value={n} size="md" />
+                    </DSCard>
+                  ))}
+                </div>
+              </DSRow>
+
+              <DSRow label="Sizes" wrap>
+                {(['sm','md','lg','xl'] as const).map(s => (
+                  <DSCard key={s} label={s}>
+                    <NumberBlock value={7} size={s} />
+                  </DSCard>
+                ))}
+              </DSRow>
+
+              <DSRow label="States (value = 5)" wrap>
+                {([
+                  ['default',  undefined,  undefined ],
+                  ['correct',  'green',    undefined ],
+                  ['wrong',    'coral',    undefined ],
+                  ['selected', undefined,  'selected'],
+                  ['hover',    undefined,  'hover'   ],
+                  ['pressed',  undefined,  'pressed' ],
+                  ['disabled', undefined,  'disabled'],
+                  ['locked',   undefined,  'locked'  ],
+                ] as [string, BlockColor | undefined, string | undefined][]).map(([label, color, state]) => (
+                  <DSCard key={label} label={label}>
+                    <BlockState state={(state as Parameters<typeof BlockState>[0]['state']) ?? 'default'}>
+                      <NumberBlock value={5} color={color} size="md" />
+                    </BlockState>
+                  </DSCard>
+                ))}
+              </DSRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Operator Blocks" subtitle="Component · 6 operators × 8 states · sizes sm/md/lg/xl">
+              <DSRow label="All operators — default">
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {['+','−','×','÷','=','?'].map(op => (
+                    <DSCard key={op} label={op === '?' ? 'Answer' : op === '=' ? 'Equals' : op === '+' ? 'Add' : op === '−' ? 'Sub' : op === '×' ? 'Mul' : 'Div'}>
+                      <OperatorBlock op={op} size="md" />
+                    </DSCard>
+                  ))}
+                </div>
+              </DSRow>
+
+              <DSRow label="Sizes (+ operator)" wrap>
+                {(['sm','md','lg','xl'] as const).map(s => (
+                  <DSCard key={s} label={s}>
+                    <OperatorBlock op="+" size={s} />
+                  </DSCard>
+                ))}
+              </DSRow>
+
+              <DSRow label="States (× operator)" wrap>
+                {([
+                  ['default',  'default' ],
+                  ['correct',  'correct' ],
+                  ['wrong',    'wrong'   ],
+                  ['selected', 'selected'],
+                  ['disabled', 'disabled'],
+                  ['locked',   'locked'  ],
+                ] as [string, Parameters<typeof BlockState>[0]['state']][]).map(([label, state]) => (
+                  <DSCard key={label} label={label}>
+                    <BlockState state={state}>
+                      <OperatorBlock op="×" size="md" />
+                    </BlockState>
+                  </DSCard>
+                ))}
+              </DSRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Color Palette" subtitle="BlockColor tokens used across all block components">
+              <DSRow label="Block colors" wrap>
+                {(Object.keys(BLOCK_PALETTE) as BlockColor[]).map((name, i) => (
+                  <DSCard key={name} label={name}>
+                    <NumberBlock value={i + 1} color={name} size="md" />
+                  </DSCard>
+                ))}
+              </DSRow>
+            </DSSection>
+          </div>
+        )}
+
+        {/* ═══════════════ BUTTONS ════════════════════════════════════ */}
+        {activeTab === 'buttons' && (
+          <div>
+            <DSSection title="Buttons" subtitle="Component · 6 variants × 3 sizes × disabled/loading states">
+
+              <DSRow label="Variants — medium size" wrap>
+                <Button variant="primary">Primary</Button>
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="yellow">Yellow</Button>
+                <Button variant="danger">Danger</Button>
+                <Button variant="ghost">Ghost</Button>
+              </DSRow>
+
+              <DSRow label="Sizes (primary variant)" wrap>
+                <DSCard label="sm"><Button variant="primary" size="sm">Small</Button></DSCard>
+                <DSCard label="md"><Button variant="primary" size="md">Medium</Button></DSCard>
+                <DSCard label="lg"><Button variant="primary" size="lg">Large</Button></DSCard>
+              </DSRow>
+
+              <DSRow label="States" wrap>
+                <DSCard label="default">
+                  <Button variant="primary">Start</Button>
+                </DSCard>
+                <DSCard label="with icon">
+                  <Button variant="primary" icon={<PlayIcon size={15} />}>Play</Button>
+                </DSCard>
+                <DSCard label="disabled">
+                  <Button variant="primary" disabled>Locked</Button>
+                </DSCard>
+                <DSCard label="loading">
+                  <Button variant="secondary" icon={<LoadingSpinner size={16} color="#fff" />}>Loading</Button>
+                </DSCard>
+                <DSCard label="full width">
+                  <div style={{ width: 200 }}>
+                    <Button variant="primary" fullWidth icon={<PlayIcon size={15} />}>Continue</Button>
+                  </div>
+                </DSCard>
+              </DSRow>
+
+              <DSRow label="All variant × disabled" wrap>
+                <Button variant="primary" disabled>Primary</Button>
+                <Button variant="secondary" disabled>Secondary</Button>
+                <Button variant="yellow" disabled>Yellow</Button>
+                <Button variant="danger" disabled>Danger</Button>
+                <Button variant="ghost" disabled>Ghost</Button>
+              </DSRow>
+
+              <DSRow label="Full width stack" wrap>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+                  <Button variant="primary" fullWidth icon={<PlayIcon size={16} />}>Continue Adventure</Button>
+                  <Button variant="secondary" fullWidth icon={<BookIcon size={16} color="#fff" />}>Browse Lessons</Button>
+                  <Button variant="yellow" fullWidth icon={<TrophyIcon size={16} color="#7A5A00" />}>Claim Reward</Button>
+                  <Button variant="ghost" fullWidth>Cancel</Button>
+                </div>
+              </DSRow>
+            </DSSection>
+          </div>
+        )}
+
+        {/* ═══════════════ CARDS ══════════════════════════════════════ */}
+        {activeTab === 'cards' && (
+          <div>
+            <DSSection title="Profile Card" subtitle="Component · displays user level, XP, coins, streak">
+              <ProfileCard name="Maya J." level={12} xp={680} coins={1240} streak={7} />
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Course Card" subtitle="Component · lesson category with progress and lock state">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <CourseCard title="Addition" description="Learn to add numbers" progress={80} color="green" lessons={12} icon="➕" />
+                <CourseCard title="Subtraction" description="Subtract with confidence" progress={45} color="blue" lessons={10} icon="➖" />
+                <CourseCard title="Multiplication" description="Times tables mastery" progress={0} color="orange" lessons={14} icon="✖️" locked />
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Lesson Card" subtitle="Component · individual lesson with stars/coins/status">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <LessonCard number={1} title="Counting to 10" duration="5 min" stars={3} coins={50} status="done" color="green" />
+                <LessonCard number={2} title="Add Single Digits" duration="8 min" stars={2} coins={75} status="active" color="blue" />
+                <LessonCard number={3} title="Add Double Digits" duration="10 min" stars={0} coins={100} status="locked" color="orange" />
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Mission Card" subtitle="Component · special challenges with progress bar">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <MissionCard title="Daily Streak!" description="Complete 3 lessons today" progress={2} max={3} reward={150} color="green" icon="🔥" />
+                <MissionCard title="Speed Run" description="Finish a lesson in under 3 min" progress={0} max={1} reward={200} color="orange" icon="⚡" />
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Reward Card" subtitle="Component · collectible reward item">
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <RewardCard title="Star Collector" subtitle="50 stars earned" icon="⭐" color="yellow" />
+                <RewardCard title="Speed Demon"   subtitle="Sub-2min finish"  icon="⚡" color="orange" />
+                <RewardCard title="Perfect Score" subtitle="10/10 correct"   icon="🏆" color="purple" />
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Achievement Badge" subtitle="Component · tier-based badge with locked state">
+              <DSRow label="Tiers × locked" wrap>
+                <AchievementBadge icon={<TrophyIcon size={26} color="#fff" />} label="Champion" tier="gold" />
+                <AchievementBadge icon={<StarIcon size={26} color="#fff" filled />} label="Star Gazer" tier="diamond" />
+                <AchievementBadge icon={<span style={{ fontSize: 26 }}>🔥</span>} label="Streak" tier="silver" />
+                <AchievementBadge icon={<span style={{ fontSize: 26 }}>📚</span>} label="Bookworm" tier="bronze" />
+                <AchievementBadge icon={<TrophyIcon size={26} color="#fff" />} label="Locked" tier="gold" locked />
+              </DSRow>
+              <DSRow label="Sizes" wrap>
+                <AchievementBadge icon={<TrophyIcon size={18} color="#fff" />} label="Small" tier="gold" size="sm" />
+                <AchievementBadge icon={<TrophyIcon size={26} color="#fff" />} label="Medium" tier="gold" size="md" />
+                <AchievementBadge icon={<TrophyIcon size={36} color="#fff" />} label="Large" tier="gold" size="lg" />
+              </DSRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Statistic Card" subtitle="Component · stat display with icon and animated slide-in">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <ResultStatCard label="Accuracy" value="95%" delay="0s" color="linear-gradient(135deg, #4FD37A 0%, #35B862 100%)" icon={<CheckIcon size={20} />} />
+                <ResultStatCard label="Time" value="2m 31s" delay="0.07s" color="linear-gradient(135deg, #6BCBFF 0%, #3BAEE5 100%)"
+                  icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>} />
+                <ResultStatCard label="Correct" value="10 / 10" delay="0.14s" color="linear-gradient(135deg, #A78BFA 0%, #6366F1 100%)" icon={<StarIcon size={20} color="#fff" />} />
+                <ResultStatCard label="Best Combo" value="8× streak" delay="0.21s" color="linear-gradient(135deg, #FFB347 0%, #E8953A 100%)" icon={<FireIcon size={20} color="#fff" />} />
+              </div>
+            </DSSection>
+          </div>
+        )}
+
+        {/* ═══════════════ PROGRESS ═══════════════════════════════════ */}
+        {activeTab === 'progress' && (
+          <div>
+            <DSSection title="XP Progress Bar" subtitle="Component · animated fill, color variants, label/percent options">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <ProgressBar value={85} max={100} color="green"  label="Addition"       showPercent />
+                <ProgressBar value={60} max={100} color="blue"   label="Subtraction"    showPercent />
+                <ProgressBar value={30} max={100} color="orange" label="Multiplication" showPercent />
+                <ProgressBar value={10} max={100} color="purple" label="Division"       showPercent />
+                <ProgressBar value={100} max={100} color="yellow" label="Complete ✓"   showPercent />
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Lesson Progress Strip" subtitle="Component · question dots with done/active/pending states">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {[3, 6, 9].map(done => (
+                  <div key={done}>
+                    <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(76,29,149,0.5)', marginBottom: 6 }}>
+                      {done} / 10 complete
+                    </div>
+                    <div style={{ display: 'flex', gap: 5 }}>
+                      {Array.from({ length: 10 }, (_, i) => (
+                        <div key={i} style={{
+                          flex: 1, height: 8, borderRadius: 999,
+                          background: i < done ? '#4FD37A' : i === done ? '#A78BFA' : 'rgba(0,0,0,0.1)',
+                          boxShadow: i === done ? '0 0 8px rgba(167,139,250,0.65)' : 'none',
+                          transition: 'background 0.3s',
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Circular Progress" subtitle="Component · SVG ring, color variants, label overlay">
+              <DSRow label="Color variants" wrap>
+                <DSCircularProgress pct={88}  color={COLORS.green}  label="Addition"    />
+                <DSCircularProgress pct={65}  color={COLORS.blue}   label="Subtraction" />
+                <DSCircularProgress pct={42}  color={COLORS.orange} label="Multiply"    />
+                <DSCircularProgress pct={20}  color={COLORS.purple} label="Division"    />
+              </DSRow>
+              <DSRow label="Sizes" wrap>
+                <DSCircularProgress pct={75} size={56} color={COLORS.green} label="sm" />
+                <DSCircularProgress pct={75} size={80} color={COLORS.blue}  label="md" />
+                <DSCircularProgress pct={75} size={110} color={COLORS.purple} label="lg" />
+              </DSRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Stars Row" subtitle="Component · 0–3 filled stars, animated on click">
+              <DSRow label="Fill states" wrap>
+                {[0, 1, 2, 3].map(n => (
+                  <DSCard key={n} label={`${n}/3`}>
+                    <StarsRow count={n} total={3} size={28} />
+                  </DSCard>
+                ))}
+              </DSRow>
+              <DSRow label="Sizes" wrap>
+                <DSCard label="sm"><StarsRow count={3} total={3} size={18} /></DSCard>
+                <DSCard label="md"><StarsRow count={3} total={3} size={24} /></DSCard>
+                <DSCard label="lg"><StarsRow count={3} total={3} size={36} /></DSCard>
+              </DSRow>
+            </DSSection>
+          </div>
+        )}
+
+        {/* ═══════════════ REWARDS ════════════════════════════════════ */}
+        {activeTab === 'rewards' && (
+          <div>
+            <DSSection title="Reward Tokens" subtitle="Component · collectible item display · sizes sm/md/lg">
+              <DSRow label="Types — medium" wrap>
+                <DSCard label="Coin">   <RewardToken type="coin"    value={50}  size="md" /></DSCard>
+                <DSCard label="Star">   <RewardToken type="star"    value={3}   size="md" /></DSCard>
+                <DSCard label="Diamond"><RewardToken type="diamond" value={5}   size="md" /></DSCard>
+                <DSCard label="XP">     <RewardToken type="xp"      value={150} size="md" /></DSCard>
+                <DSCard label="Chest">  <RewardToken type="chest"              size="md" /></DSCard>
+              </DSRow>
+              <DSRow label="Sizes (coin)" wrap>
+                <DSCard label="sm"><RewardToken type="coin" value={10} size="sm" /></DSCard>
+                <DSCard label="md"><RewardToken type="coin" value={50} size="md" /></DSCard>
+                <DSCard label="lg"><RewardToken type="coin" value={250} size="lg" /></DSCard>
+              </DSRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="XP Badge" subtitle="Component · XP earned pill · sizes sm/md/lg">
+              <DSRow label="Sizes" wrap>
+                <XPBadge xp={25}  size="sm" />
+                <XPBadge xp={50}  size="md" />
+                <XPBadge xp={150} size="lg" />
+              </DSRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Coin Display" subtitle="Component · coin amount with icon · sizes sm/md/lg">
+              <DSRow label="Sizes" wrap>
+                <CoinDisplay amount={50}   size="sm" />
+                <CoinDisplay amount={250}  size="md" />
+                <CoinDisplay amount={1240} size="lg" />
+              </DSRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Achievement Badges" subtitle="Component · 4 tiers (bronze/silver/gold/diamond) + locked state">
+              <DSRow label="All tiers" wrap>
+                {(['bronze','silver','gold','diamond'] as BadgeTier[]).map(t => (
+                  <AchievementBadge key={t} icon={<TrophyIcon size={26} color="#fff" />} label={BADGE_TIERS[t].label} tier={t} />
+                ))}
+                <AchievementBadge icon={<TrophyIcon size={26} color="#fff" />} label="Locked" tier="gold" locked />
+              </DSRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Reward Chips (Inline)" subtitle="Component · compact collectible used in Practice/Result screens">
+              <div style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(12px)', borderRadius: 24, padding: '18px 14px', border: '1.5px solid rgba(255,255,255,0.7)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: 14 }}>
+                  <RewardChip emoji="⭐" label="3 Stars"      sublabel="Collected"     color="#FFF4C8" delay="0s" />
+                  <RewardChip emoji="🪙" label="75 Coins"    sublabel="Earned"        color="#FFF3C0" delay="0.1s" />
+                  <RewardChip emoji="🏅" label="Gold Badge"  sublabel="95%+ perfect"  color="#EDE9FE" delay="0.2s" />
+                  <RewardChip emoji="📦" label="Mystery Box" sublabel="Tap to open!"  color="#DBEAFE" delay="0.3s" chest />
+                  <RewardChip emoji="🌟" label="No Mistakes" sublabel="Flawless!"     color="#D1FAE5" delay="0.4s" />
+                  <RewardChip emoji="🦊" label="Fox Hat"     sublabel="Accessory"     color="#FCE7F3" delay="0.5s" />
+                </div>
+              </div>
+            </DSSection>
+          </div>
+        )}
+
+        {/* ═══════════════ NAVIGATION ═════════════════════════════════ */}
+        {activeTab === 'nav' && (
+          <div>
+            <DSSection title="Top Navigation Bar" subtitle="Component · sticky header with title, coins, optional back button">
+              <div style={{ borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                <TopNavBar title="✦ MathBlocks" coins={1240} />
+              </div>
+              <div style={{ marginTop: 14, borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                <TopNavBar title="📚 Learn" coins={1240} onBack={() => {}} />
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Bottom Navigation Bar" subtitle="Component · 4 tabs (home/learn/play/me) with active state">
+              {(['home','learn','play','me'] as const).map(active => (
+                <div key={active} style={{ marginBottom: 14, borderRadius: 24, overflow: 'hidden', boxShadow: '0 -2px 16px rgba(0,0,0,0.06)' }}>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(76,29,149,0.5)', padding: '8px 16px 4px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Active: {active}
+                  </div>
+                  <BottomNavBar active={active} onSelect={() => {}} />
+                </div>
+              ))}
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Back Button" subtitle="Component · used in TopNavBar, AdventureMap, PracticeScreen">
+              <DSRow label="Variants" wrap>
+                <DSCard label="default">
+                  <button style={{
+                    background: COLORS.neutral, border: 'none', borderRadius: 12,
+                    width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COLORS.text} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                  </button>
+                </DSCard>
+                <DSCard label="frosted (dark bg)">
+                  <div style={{ padding: 6, background: '#1E1B4B', borderRadius: 14 }}>
+                    <button style={{
+                      background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(10px)',
+                      border: 'none', borderRadius: 12,
+                      width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
+                    </button>
+                  </div>
+                </DSCard>
+              </DSRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Section Header" subtitle="Component · section title + optional action link">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <SectionHeader title="My Adventures" action="View all" />
+                <SectionHeader title="Daily Challenge" action="Practice →" />
+                <SectionHeader title="Achievements" />
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Avatar" subtitle="Component · player avatar with level badge · colors × sizes">
+              <DSRow label="Colors" wrap>
+                {(['green','blue','yellow','orange','purple','coral'] as BlockColor[]).map(c => (
+                  <DSCard key={c} label={c}>
+                    <Avatar name={c} color={c} size="md" level={4} />
+                  </DSCard>
+                ))}
+              </DSRow>
+              <DSRow label="Sizes (purple)" wrap>
+                {(['sm','md','lg','xl'] as const).map(s => (
+                  <DSCard key={s} label={s}>
+                    <Avatar name="Maya" color="purple" size={s} level={s === 'xl' ? 12 : undefined} />
+                  </DSCard>
+                ))}
+              </DSRow>
+            </DSSection>
+          </div>
+        )}
+
+        {/* ═══════════════ DIALOGS ════════════════════════════════════ */}
+        {activeTab === 'dialogs' && (
+          <div>
+            <DSSection title="Dialogs" subtitle="Component · Success / Failure / Reward / Confirmation">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <DSCard label="Success dialog">
+                  <div style={{ width: '100%' }}>
+                    <DSDialog type="success" />
+                  </div>
+                </DSCard>
+                <DSCard label="Failure dialog">
+                  <div style={{ width: '100%' }}>
+                    <DSDialog type="failure" />
+                  </div>
+                </DSCard>
+                <DSCard label="Reward dialog">
+                  <div style={{ width: '100%' }}>
+                    <DSDialog type="reward" />
+                  </div>
+                </DSCard>
+                <DSCard label="Confirmation dialog">
+                  <div style={{ width: '100%' }}>
+                    <DSDialog type="confirm" />
+                  </div>
+                </DSCard>
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Hint Bubble" subtitle="Component · mascot speech bubble used in PracticeScreen">
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                <div style={{
+                  background: 'rgba(255,255,255,0.95)', borderRadius: 20, padding: '13px 18px',
+                  boxShadow: '0 6px 28px rgba(0,0,0,0.10)',
+                  border: '1.5px solid rgba(167,139,250,0.3)',
+                  textAlign: 'center', maxWidth: 290, position: 'relative',
+                }}>
+                  <div style={{ position: 'absolute', bottom: -9, left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '9px solid transparent', borderRight: '9px solid transparent', borderTop: '10px solid rgba(255,255,255,0.95)' }} />
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13.5, color: COLORS.text }}>
+                    💡 Think step by step: 3 + 4... count on your fingers! 🖐️
+                  </div>
+                </div>
+                <div style={{ marginTop: 16 }}>
+                  <Mascot size={72} />
+                </div>
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Toast / Status States" subtitle="Component · inline feedback strips">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {([
+                  ['correct', 'linear-gradient(135deg, #4FD37A 0%, #35B862 100%)', '🎉 Fantastic! Keep going!'],
+                  ['wrong',   'linear-gradient(135deg, #FF7B7B 0%, #E85A5A 100%)', '❌ Not quite! You\'ve got this! 💪'],
+                  ['hint',    'linear-gradient(135deg, #FFD54A 0%, #FFB347 100%)', '💡 Drop it in the box! ⬆️'],
+                  ['info',    'linear-gradient(135deg, #A78BFA 0%, #6366F1 100%)', '🎯 Tap a number below or drag it up'],
+                ] as [string, string, string][]).map(([type, bg, msg]) => (
+                  <div key={type} style={{
+                    padding: '10px 16px', borderRadius: 14,
+                    background: bg,
+                    fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#fff',
+                    display: 'flex', alignItems: 'center', gap: 8,
+                  }}>
+                    {msg}
+                  </div>
+                ))}
+              </div>
+            </DSSection>
+          </div>
+        )}
+
+        {/* ═══════════════ INPUTS ═════════════════════════════════════ */}
+        {activeTab === 'inputs' && (
+          <div>
+            <DSSection title="Search Input" subtitle="Component · live search with clear button">
+              <DSSearchInput />
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Text Input" subtitle="Component · label + placeholder + focus ring">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: 'rgba(76,29,149,0.55)', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Name
+                  </div>
+                  <DSInput placeholder="Enter your name..." />
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: 'rgba(76,29,149,0.55)', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Email
+                  </div>
+                  <DSInput placeholder="you@example.com" type="email" />
+                </div>
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Numeric Input" subtitle="Component · number block icon prefix, used for answer entry">
+              <DSInput placeholder="Type your answer..." numeric />
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Number Block Keyboard" subtitle="Component · drag-and-drop answer keyboard (used in PracticeScreen)">
+              <div style={{
+                background: 'rgba(255,255,255,0.55)', backdropFilter: 'blur(12px)',
+                borderRadius: 24, padding: '18px 16px 20px',
+                border: '1.5px solid rgba(255,255,255,0.6)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+              }}>
+                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11.5, color: 'rgba(76,29,149,0.55)', marginBottom: 14, textAlign: 'center' }}>
+                  ✋ Tap or drag a number
+                </div>
+                {[[0,1,2,3,4],[5,6,7,8,9]].map((row, ri) => (
+                  <div key={ri} style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: ri === 0 ? 8 : 0 }}>
+                    {row.map(n => (
+                      <NumberBlock key={n} value={n} size="md" />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Answer Slot" subtitle="Component · drop zone for the drag-and-drop answer system">
+              <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+                <DSCard label="empty (pulsing)">
+                  <div className="animate-slot-idle">
+                    <OperatorBlock op="?" size="lg" animate />
+                  </div>
+                </DSCard>
+                <DSCard label="hover / glow">
+                  <div style={{ position: 'relative' }}>
+                    <NumberBlock value={7} size="lg" />
+                    <div style={{
+                      position: 'absolute', inset: -10, borderRadius: 26, zIndex: -1,
+                      background: 'rgba(255,213,74,0.18)', border: '3px dashed #FFD54A',
+                    }} />
+                  </div>
+                </DSCard>
+                <DSCard label="correct">
+                  <div className="animate-answer-pop">
+                    <NumberBlock value={7} color="green" size="lg" />
+                  </div>
+                </DSCard>
+                <DSCard label="wrong">
+                  <div className="animate-wiggle">
+                    <NumberBlock value={3} color="coral" size="lg" />
+                  </div>
+                </DSCard>
+              </div>
+            </DSSection>
+          </div>
+        )}
+
+        {/* ═══════════════ TOKENS ═════════════════════════════════════ */}
+        {activeTab === 'tokens' && (
+          <div>
+            <DSSection title="Color Tokens" subtitle="Design tokens — CSS variables defined in @theme">
+              <TokenRow label="Primary palette">
+                <ColorSwatch color={COLORS.green}  name="green" />
+                <ColorSwatch color={COLORS.blue}   name="blue" />
+                <ColorSwatch color={COLORS.yellow} name="yellow" />
+                <ColorSwatch color={COLORS.orange} name="orange" />
+                <ColorSwatch color={COLORS.purple} name="purple" />
+                <ColorSwatch color={COLORS.coral}  name="coral" />
+              </TokenRow>
+              <TokenRow label="Dark variants">
+                <ColorSwatch color={COLORS.greenDark}  name="green-dark" />
+                <ColorSwatch color={COLORS.blueDark}   name="blue-dark" />
+                <ColorSwatch color={COLORS.yellowDark} name="yellow-dark" />
+                <ColorSwatch color={COLORS.orangeDark} name="orange-dark" />
+                <ColorSwatch color={COLORS.purpleDark} name="purple-dark" />
+                <ColorSwatch color={COLORS.coralDark}  name="coral-dark" />
+              </TokenRow>
+              <TokenRow label="Neutral / surface">
+                <ColorSwatch color={COLORS.neutral} name="neutral" />
+                <ColorSwatch color={COLORS.white}   name="white" />
+                <ColorSwatch color={COLORS.dark}    name="dark" />
+                <ColorSwatch color={COLORS.text}    name="text" />
+                <ColorSwatch color={COLORS.textMid} name="text-mid" />
+                <ColorSwatch color={COLORS.textLight} name="text-light" />
+              </TokenRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Typography" subtitle="Font: Nunito · weights 700 / 800 / 900 · sizes xs–2xl">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  { w: 900, s: 32, label: 'Heading 1 — 32px/900' },
+                  { w: 900, s: 26, label: 'Heading 2 — 26px/900' },
+                  { w: 800, s: 20, label: 'Heading 3 — 20px/800' },
+                  { w: 800, s: 16, label: 'Body Large — 16px/800' },
+                  { w: 700, s: 14, label: 'Body — 14px/700' },
+                  { w: 700, s: 12, label: 'Caption — 12px/700' },
+                  { w: 700, s: 10, label: 'Label — 10px/700 · UPPERCASE', upper: true },
+                ].map(t => (
+                  <div key={t.s + t.w} style={{
+                    display: 'flex', alignItems: 'baseline', gap: 16,
+                    paddingBottom: 10, borderBottom: '1px solid rgba(167,139,250,0.1)',
+                  }}>
+                    <span style={{
+                      fontFamily: 'Nunito', fontWeight: t.w, fontSize: t.s, color: '#1E1B4B', lineHeight: 1,
+                      textTransform: (t as any).upper ? 'uppercase' : 'none', letterSpacing: (t as any).upper ? '0.08em' : 'normal',
+                      flex: 1,
+                    }}>
+                      Aa
+                    </span>
+                    <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(76,29,149,0.45)', flexShrink: 0 }}>
+                      {t.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Spacing & Radius" subtitle="Design tokens — used consistently across all components">
+              <TokenRow label="Border radius tokens">
+                {[
+                  { r: 8,   name: 'sm' },
+                  { r: 14,  name: 'btn (16px)' },
+                  { r: 20,  name: 'block (20px)' },
+                  { r: 24,  name: 'card (24px)' },
+                  { r: 32,  name: 'xl (32px)' },
+                  { r: 999, name: 'pill (999px)' },
+                ].map(({ r, name }) => (
+                  <div key={name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <div style={{
+                      width: 44, height: 44,
+                      background: 'linear-gradient(135deg, #A78BFA 0%, #6366F1 100%)',
+                      borderRadius: r,
+                    }} />
+                    <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 9.5, color: 'rgba(76,29,149,0.55)', textAlign: 'center', maxWidth: 52 }}>{name}</div>
+                  </div>
+                ))}
+              </TokenRow>
+
+              <TokenRow label="Elevation (box-shadow)">
+                {[
+                  { s: '0 2px 8px rgba(0,0,0,0.06)',  n: 'xs' },
+                  { s: '0 4px 16px rgba(0,0,0,0.08)', n: 'sm' },
+                  { s: '0 8px 32px rgba(0,0,0,0.10)', n: 'md' },
+                  { s: '0 14px 48px rgba(0,0,0,0.14)',n: 'lg' },
+                ].map(({ s, n }) => (
+                  <div key={n} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <div style={{ width: 44, height: 44, background: '#fff', borderRadius: 14, boxShadow: s }} />
+                    <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10, color: 'rgba(76,29,149,0.55)' }}>{n}</div>
+                  </div>
+                ))}
+              </TokenRow>
+            </DSSection>
+
+            <div style={{ height: 1, background: 'rgba(167,139,250,0.1)', margin: '0 20px' }} />
+
+            <DSSection title="Animations" subtitle="CSS keyframe library — defined in index.css">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[
+                  ['bounce-in',       '.animate-bounce-in',       'Entry scale pop (0.5s)'],
+                  ['float',           '.animate-float',            'Vertical hover loop (3s)'],
+                  ['wiggle',          '.animate-wiggle',           'Wrong answer shake (0.4s)'],
+                  ['pop',             '.animate-pop',              'Click feedback (0.25s)'],
+                  ['star-spin',       '.animate-star-spin',        'Star reward spin (0.6s)'],
+                  ['confetti-fly',    '.animate-confetti-fly',     'Reward confetti burst (1.2s)'],
+                  ['reward-pop',      '.animate-reward-pop',       'Reward popup slide (0.45s)'],
+                  ['slot-idle',       '.animate-slot-idle',        'Answer slot pulse (2.6s loop)'],
+                  ['answer-pop',      '.animate-answer-pop',       'Block dropped in slot (0.42s)'],
+                  ['keyboard-press',  '.animate-keyboard-press',   'Key press feedback (0.25s)'],
+                  ['mascot-wave',     '.animate-mascot-wave',      'Mascot celebration (2.2s loop)'],
+                  ['star-award',      '.animate-star-award',       'Star score reveal (0.55s)'],
+                  ['badge-unlock',    '.animate-badge-unlock',     'Badge earn pop (0.6s)'],
+                  ['xp-bar',          '.animate-xp-bar',           'XP progress fill (1.6s)'],
+                  ['result-hero',     '.animate-result-hero',      'Result screen entry (0.7s)'],
+                ].map(([name, cls, desc]) => (
+                  <div key={name} style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '8px 12px', borderRadius: 12,
+                    background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(167,139,250,0.12)',
+                  }}>
+                    <code style={{ fontFamily: 'monospace', fontSize: 12, color: '#6366F1', background: 'rgba(99,102,241,0.08)', padding: '2px 7px', borderRadius: 6, flexShrink: 0, lineHeight: 1.6 }}>
+                      {cls}
+                    </code>
+                    <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: COLORS.text }}>{desc}</span>
+                  </div>
+                ))}
+              </div>
+            </DSSection>
+          </div>
+        )}
+
+      </div>
     </div>
   )
 }

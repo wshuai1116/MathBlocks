@@ -915,6 +915,8 @@ export default function App() {
   const [resultData, setResultData] = useState<ResultData | null>(null)
   const [showComponents, setShowComponents] = useState(false)
   const [showMotion, setShowMotion] = useState(false)
+  const [showIllustrations, setShowIllustrations] = useState(false)
+  const [showTokens, setShowTokens] = useState(false)
 
   const handleNavSelect = (id: string) => {
     setShowAdventureMap(false)
@@ -922,6 +924,8 @@ export default function App() {
     setShowResult(false)
     setShowComponents(false)
     setShowMotion(false)
+    setShowIllustrations(false)
+    setShowTokens(false)
     setTab(id as Tab)
   }
   const openPractice = () => { setShowResult(false); setShowPractice(true) }
@@ -930,7 +934,11 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', background: COLORS.neutral, fontFamily: 'Nunito, system-ui, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ width: '100%', maxWidth: 430, minHeight: '100vh', background: COLORS.neutral, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        {showMotion ? (
+        {showTokens ? (
+          <DesignTokenPage onBack={() => setShowTokens(false)} />
+        ) : showIllustrations ? (
+          <IllustrationStyleGuide onBack={() => setShowIllustrations(false)} />
+        ) : showMotion ? (
           <MotionDesignScreen onBack={() => setShowMotion(false)} />
         ) : showComponents ? (
           <ComponentLibraryScreen onBack={() => setShowComponents(false)} />
@@ -947,7 +955,7 @@ export default function App() {
               {tab === 'home' && <HomeTab onOpenAdventureMap={() => setShowAdventureMap(true)} onOpenPractice={openPractice} />}
               {tab === 'learn' && <LearnTab onStartLesson={openPractice} />}
               {tab === 'play' && <PlayTab onStartPractice={openPractice} />}
-              {tab === 'me' && <MeTab onOpenComponents={() => setShowComponents(true)} onOpenMotion={() => setShowMotion(true)} />}
+              {tab === 'me' && <MeTab onOpenComponents={() => setShowComponents(true)} onOpenMotion={() => setShowMotion(true)} onOpenIllustrations={() => setShowIllustrations(true)} onOpenTokens={() => setShowTokens(true)} />}
             </div>
             <BottomNavBar active={tab} onSelect={handleNavSelect} />
           </>
@@ -2003,7 +2011,7 @@ function PlayTab({ onStartPractice }: { onStartPractice?: () => void }) {
 
 // ─── Me Tab ───────────────────────────────────────────────────────────────────
 
-function MeTab({ onOpenComponents, onOpenMotion }: { onOpenComponents?: () => void; onOpenMotion?: () => void }) {
+function MeTab({ onOpenComponents, onOpenMotion, onOpenIllustrations, onOpenTokens }: { onOpenComponents?: () => void; onOpenMotion?: () => void; onOpenIllustrations?: () => void; onOpenTokens?: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <ProfileCard name="Maya J." level={12} xp={680} coins={1240} streak={7} />
@@ -2098,6 +2106,54 @@ function MeTab({ onOpenComponents, onOpenMotion }: { onOpenComponents?: () => vo
           </div>
         </div>
         <ArrowRightIcon size={16} color="rgba(148,163,184,0.6)" />
+      </button>
+
+      <button
+        onClick={onOpenIllustrations}
+        style={{
+          width: '100%', padding: '14px 20px',
+          background: 'linear-gradient(135deg, #1C0A00 0%, #2D1200 100%)',
+          border: 'none', borderRadius: 18, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          boxShadow: '0 4px 0 0 #0D0500, 0 6px 24px rgba(255,120,30,0.15)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 12,
+            background: 'rgba(255,155,92,0.25)', border: '1px solid rgba(255,155,92,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+          }}>🎨</div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 15, color: '#fff' }}>Illustration Guide</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11.5, color: 'rgba(255,155,92,0.75)' }}>SVG Style · Color · Character</div>
+          </div>
+        </div>
+        <ArrowRightIcon size={16} color="rgba(255,155,92,0.6)" />
+      </button>
+
+      <button
+        onClick={onOpenTokens}
+        style={{
+          width: '100%', padding: '14px 20px',
+          background: 'linear-gradient(135deg, #00141E 0%, #00263A 100%)',
+          border: 'none', borderRadius: 18, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          boxShadow: '0 4px 0 0 #000A10, 0 6px 24px rgba(34,211,238,0.12)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 12,
+            background: 'rgba(34,211,238,0.18)', border: '1px solid rgba(34,211,238,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+          }}>⬡</div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 15, color: '#fff' }}>Design Tokens</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11.5, color: 'rgba(34,211,238,0.65)' }}>CSS Variables · Dev-ready · Cursor</div>
+          </div>
+        </div>
+        <ArrowRightIcon size={16} color="rgba(34,211,238,0.55)" />
       </button>
     </div>
   )
@@ -5918,6 +5974,2337 @@ function MotionDesignScreen({ onBack }: { onBack: () => void }) {
               ))}
             </div>
           </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Illustration Style Guide ─────────────────────────────────────────────────
+
+type IllustTab = 'all' | 'principles' | 'color' | 'characters' | 'world' | 'items' | 'effects'
+
+// ── SVG Illustration components ──────────────────────────────────────────────
+
+function IllustCoin({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <radialGradient id="coin-body" cx="38%" cy="30%" r="62%">
+          <stop offset="0%" stopColor="#FFE866"/>
+          <stop offset="55%" stopColor="#FFBB00"/>
+          <stop offset="100%" stopColor="#B87200"/>
+        </radialGradient>
+        <radialGradient id="coin-face" cx="38%" cy="30%" r="60%">
+          <stop offset="0%" stopColor="#FFF5B0"/>
+          <stop offset="100%" stopColor="#E8A212"/>
+        </radialGradient>
+      </defs>
+      {/* Cast shadow */}
+      <ellipse cx="45" cy="57" rx="28" ry="9" fill="rgba(0,0,0,0.22)"/>
+      {/* Coin body */}
+      <circle cx="45" cy="42" r="32" fill="url(#coin-body)"/>
+      {/* Inner ring */}
+      <circle cx="45" cy="42" r="25" fill="none" stroke="#A86800" strokeWidth="2.5"/>
+      {/* Face */}
+      <circle cx="45" cy="42" r="22" fill="url(#coin-face)"/>
+      {/* Symbol */}
+      <text x="45" y="50" textAnchor="middle" fontSize="20" fontWeight="900" fill="#8A5000" fontFamily="Georgia,serif" style={{userSelect:'none'}}>$</text>
+      {/* Specular highlight */}
+      <ellipse cx="35" cy="30" rx="10" ry="6" fill="rgba(255,255,255,0.52)" transform="rotate(-25 35 30)"/>
+      {/* Edge shimmer */}
+      <path d="M25 26 Q18 42 25 58" stroke="rgba(255,255,255,0.18)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function IllustStar({ size = 90 }: { size?: number }) {
+  const star = "45,13 52,33 74,33 57,46 63,67 45,55 27,67 33,46 16,33 38,33"
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <linearGradient id="star-grad" x1="20%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%" stopColor="#FFE566"/>
+          <stop offset="100%" stopColor="#FF9500"/>
+        </linearGradient>
+        <radialGradient id="star-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FFD54A" stopOpacity="0.6"/>
+          <stop offset="100%" stopColor="#FF9500" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      {/* Glow aura */}
+      <circle cx="45" cy="43" r="34" fill="url(#star-glow)"/>
+      {/* Shadow star */}
+      <polygon points={star} fill="rgba(0,0,0,0.18)" transform="translate(2,4)"/>
+      {/* Main star */}
+      <polygon points={star} fill="url(#star-grad)"/>
+      {/* Specular */}
+      <ellipse cx="38" cy="27" rx="8" ry="5" fill="rgba(255,255,255,0.55)" transform="rotate(-25 38 27)"/>
+      {/* Inner shine line */}
+      <path d="M35 22 L50 34" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function IllustTreasureClosed({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <linearGradient id="tc-lid" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#92400E"/>
+          <stop offset="100%" stopColor="#6B2C06"/>
+        </linearGradient>
+        <linearGradient id="tc-body" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#A35010"/>
+          <stop offset="100%" stopColor="#7C3008"/>
+        </linearGradient>
+        <linearGradient id="tc-band" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFE566"/>
+          <stop offset="100%" stopColor="#CC9000"/>
+        </linearGradient>
+      </defs>
+      {/* Shadow */}
+      <ellipse cx="45" cy="72" rx="30" ry="8" fill="rgba(0,0,0,0.22)"/>
+      {/* Body */}
+      <rect x="13" y="46" width="64" height="28" rx="6" fill="url(#tc-body)"/>
+      {/* Body banding */}
+      <rect x="13" y="56" width="64" height="5" fill="url(#tc-band)"/>
+      {/* Lid */}
+      <rect x="13" y="26" width="64" height="22" rx="6" fill="url(#tc-lid)"/>
+      <path d="M13 37 Q45 32 77 37" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="2"/>
+      {/* Lid band */}
+      <rect x="13" y="42" width="64" height="5" fill="url(#tc-band)"/>
+      {/* Lid highlight */}
+      <rect x="18" y="29" width="30" height="8" rx="3" fill="rgba(255,255,255,0.12)"/>
+      {/* Lock */}
+      <rect x="38" y="49" width="14" height="12" rx="4" fill="#FFD54A"/>
+      <circle cx="45" cy="53" r="3.5" fill="#B87000"/>
+      <rect x="43" y="53" width="4" height="5" rx="1" fill="#B87000"/>
+      {/* Hinge left */}
+      <circle cx="24" cy="47" r="4" fill="#CC9000"/>
+      <circle cx="24" cy="47" r="2.5" fill="#FFE566"/>
+      {/* Hinge right */}
+      <circle cx="66" cy="47" r="4" fill="#CC9000"/>
+      <circle cx="66" cy="47" r="2.5" fill="#FFE566"/>
+    </svg>
+  )
+}
+
+function IllustTreasureOpen({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <radialGradient id="to-glow" cx="50%" cy="80%" r="60%">
+          <stop offset="0%" stopColor="#FFD54A" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#FF9500" stopOpacity="0"/>
+        </radialGradient>
+        <linearGradient id="to-body" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#A35010"/>
+          <stop offset="100%" stopColor="#7C3008"/>
+        </linearGradient>
+        <linearGradient id="to-lid" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#92400E"/>
+          <stop offset="100%" stopColor="#6B2C06"/>
+        </linearGradient>
+        <linearGradient id="to-band" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFE566"/>
+          <stop offset="100%" stopColor="#CC9000"/>
+        </linearGradient>
+        <linearGradient id="to-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFE566"/>
+          <stop offset="100%" stopColor="#CC6B00"/>
+        </linearGradient>
+      </defs>
+      {/* Glow */}
+      <ellipse cx="45" cy="60" rx="38" ry="30" fill="url(#to-glow)"/>
+      {/* Shadow */}
+      <ellipse cx="45" cy="74" rx="30" ry="7" fill="rgba(0,0,0,0.2)"/>
+      {/* Body */}
+      <rect x="13" y="48" width="64" height="28" rx="6" fill="url(#to-body)"/>
+      {/* Inner gold */}
+      <rect x="17" y="50" width="56" height="22" rx="4" fill="url(#to-inner)"/>
+      {/* Coins inside */}
+      <circle cx="35" cy="62" r="8" fill="#FFD54A"/>
+      <circle cx="35" cy="62" r="5.5" fill="#FFB800"/>
+      <circle cx="50" cy="58" r="7" fill="#FFD54A"/>
+      <circle cx="50" cy="58" r="5" fill="#FFB800"/>
+      <circle cx="62" cy="63" r="6" fill="#FFD54A"/>
+      {/* Body band */}
+      <rect x="13" y="58" width="64" height="4" fill="url(#to-band)"/>
+      {/* Lid (flipped open) */}
+      <rect x="13" y="8" width="64" height="22" rx="6" fill="url(#to-lid)" transform="rotate(-8 45 48)"/>
+      <rect x="13" y="24" width="64" height="4" fill="url(#to-band)" transform="rotate(-8 45 48)"/>
+      {/* Lid highlight */}
+      <rect x="18" y="11" width="28" height="7" rx="3" fill="rgba(255,255,255,0.12)" transform="rotate(-8 45 48)"/>
+      {/* Sparkle effects */}
+      <path d="M70 20 L71.5 16 L73 20 L77 21.5 L73 23 L71.5 27 L70 23 L66 21.5Z" fill="#FFE566"/>
+      <path d="M20 14 L21 11 L22 14 L25 15 L22 16 L21 19 L20 16 L17 15Z" fill="#FFD54A" opacity="0.8"/>
+    </svg>
+  )
+}
+
+function IllustMathBlock({ op, color, darkColor, size = 90 }: { op: string; color: string; darkColor: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <linearGradient id={`mb-${op}-top`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={color} stopOpacity="1"/>
+          <stop offset="100%" stopColor={darkColor}/>
+        </linearGradient>
+      </defs>
+      {/* Shadow */}
+      <rect x="19" y="26" width="52" height="52" rx="14" fill="rgba(0,0,0,0.25)"/>
+      {/* 3D bottom face */}
+      <rect x="14" y="26" width="52" height="52" rx="14" fill={darkColor}/>
+      {/* Top face */}
+      <rect x="14" y="16" width="52" height="52" rx="14" fill={`url(#mb-${op}-top)`}/>
+      {/* Specular */}
+      <rect x="19" y="19" width="24" height="12" rx="6" fill="rgba(255,255,255,0.22)"/>
+      {/* Operator symbol */}
+      <text x="40" y="52" textAnchor="middle" fontSize="28" fontWeight="900" fill="rgba(255,255,255,0.9)" fontFamily="Nunito,sans-serif" style={{userSelect:'none'}}>{op}</text>
+      {/* Symbol highlight */}
+      <text x="39" y="51" textAnchor="middle" fontSize="28" fontWeight="900" fill="rgba(255,255,255,0.35)" fontFamily="Nunito,sans-serif" style={{userSelect:'none'}}>{op}</text>
+    </svg>
+  )
+}
+
+function IllustCloud({ size = 90, variant = 'medium' }: { size?: number; variant?: 'small' | 'medium' | 'large' }) {
+  const scale = variant === 'small' ? 0.7 : variant === 'large' ? 1.15 : 1
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <radialGradient id={`cloud-${variant}`} cx="45%" cy="35%" r="55%">
+          <stop offset="0%" stopColor="#FFFFFF"/>
+          <stop offset="70%" stopColor="#EAF3FF"/>
+          <stop offset="100%" stopColor="#C8DFF8"/>
+        </radialGradient>
+      </defs>
+      {/* Shadow */}
+      <ellipse cx="45" cy="70" rx={28*scale} ry={6*scale} fill="rgba(100,140,200,0.2)"/>
+      {/* Cloud blobs */}
+      <g transform={`translate(${45*(1-scale)},${45*(1-scale)}) scale(${scale})`}>
+        <circle cx="45" cy="52" r="22" fill={`url(#cloud-${variant})`}/>
+        <circle cx="28" cy="58" r="16" fill={`url(#cloud-${variant})`}/>
+        <circle cx="62" cy="56" r="18" fill={`url(#cloud-${variant})`}/>
+        <circle cx="38" cy="44" r="18" fill={`url(#cloud-${variant})`}/>
+        <circle cx="56" cy="42" r="16" fill={`url(#cloud-${variant})`}/>
+        {/* Flat bottom */}
+        <rect x="12" y="58" width="66" height="12" fill={`url(#cloud-${variant})`}/>
+      </g>
+      {/* Highlight */}
+      <ellipse cx="34" cy="36" rx="10" ry="6" fill="rgba(255,255,255,0.7)" transform={`rotate(-15 34 36) scale(${scale}) translate(${45*(1-scale)/scale},${45*(1-scale)/scale})`}/>
+    </svg>
+  )
+}
+
+function IllustTreePine({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <linearGradient id="pine-t1" x1="20%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%" stopColor="#34D399"/>
+          <stop offset="100%" stopColor="#059669"/>
+        </linearGradient>
+        <linearGradient id="pine-t2" x1="20%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%" stopColor="#10B981"/>
+          <stop offset="100%" stopColor="#047857"/>
+        </linearGradient>
+        <linearGradient id="pine-t3" x1="20%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%" stopColor="#059669"/>
+          <stop offset="100%" stopColor="#065F46"/>
+        </linearGradient>
+      </defs>
+      {/* Shadow */}
+      <ellipse cx="45" cy="80" rx="18" ry="5" fill="rgba(0,0,0,0.18)"/>
+      {/* Trunk */}
+      <rect x="40" y="66" width="10" height="16" rx="3" fill="#7C4A14"/>
+      <rect x="41" y="66" width="3" height="16" rx="2" fill="rgba(255,255,255,0.15)"/>
+      {/* Lower tier */}
+      <polygon points="45,54 63,72 27,72" fill="url(#pine-t3)"/>
+      <polygon points="45,54 53,72 37,72" fill="rgba(255,255,255,0.08)"/>
+      {/* Mid tier */}
+      <polygon points="45,38 61,58 29,58" fill="url(#pine-t2)"/>
+      <polygon points="45,38 53,58 37,58" fill="rgba(255,255,255,0.08)"/>
+      {/* Top tier */}
+      <polygon points="45,20 59,46 31,46" fill="url(#pine-t1)"/>
+      <polygon points="45,20 51,46 39,46" fill="rgba(255,255,255,0.12)"/>
+      {/* Snow caps */}
+      <path d="M37 46 Q45 36 53 46" fill="rgba(255,255,255,0.85)"/>
+      <path d="M32 58 Q45 48 58 58" fill="rgba(255,255,255,0.65)"/>
+    </svg>
+  )
+}
+
+function IllustTreeRound({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <radialGradient id="round-tree" cx="40%" cy="35%" r="58%">
+          <stop offset="0%" stopColor="#6EE7B7"/>
+          <stop offset="55%" stopColor="#10B981"/>
+          <stop offset="100%" stopColor="#065F46"/>
+        </radialGradient>
+      </defs>
+      {/* Shadow */}
+      <ellipse cx="45" cy="80" rx="20" ry="6" fill="rgba(0,0,0,0.18)"/>
+      {/* Trunk */}
+      <rect x="39" y="62" width="12" height="20" rx="4" fill="#92400E"/>
+      <rect x="40" y="62" width="4" height="20" rx="2" fill="rgba(255,255,255,0.15)"/>
+      {/* Canopy shadow */}
+      <circle cx="47" cy="40" r="28" fill="rgba(4,120,87,0.4)"/>
+      {/* Canopy */}
+      <circle cx="45" cy="38" r="28" fill="url(#round-tree)"/>
+      {/* Specular */}
+      <ellipse cx="34" cy="24" rx="12" ry="8" fill="rgba(255,255,255,0.28)" transform="rotate(-15 34 24)"/>
+      {/* Fruit / berries */}
+      <circle cx="34" cy="44" r="3.5" fill="#EF4444"/>
+      <circle cx="54" cy="36" r="3" fill="#EF4444"/>
+      <circle cx="44" cy="52" r="3" fill="#F97316"/>
+      <circle cx="36" cy="33" r="2.5" fill="#EF4444"/>
+    </svg>
+  )
+}
+
+function IllustIsland({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <radialGradient id="island-grass" cx="50%" cy="30%" r="55%">
+          <stop offset="0%" stopColor="#6EE7B7"/>
+          <stop offset="100%" stopColor="#059669"/>
+        </radialGradient>
+        <linearGradient id="island-earth" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#C08050"/>
+          <stop offset="100%" stopColor="#7C4A14"/>
+        </linearGradient>
+      </defs>
+      {/* Floating shadow */}
+      <ellipse cx="45" cy="80" rx="30" ry="7" fill="rgba(0,0,0,0.18)"/>
+      {/* Earth mass */}
+      <ellipse cx="45" cy="62" rx="34" ry="18" fill="url(#island-earth)"/>
+      {/* Earth bottom taper */}
+      <path d="M30 68 Q45 84 60 68" fill="#6B3A10"/>
+      {/* Grass top */}
+      <ellipse cx="45" cy="48" rx="34" ry="16" fill="url(#island-grass)"/>
+      {/* Grass highlights */}
+      <ellipse cx="34" cy="44" rx="12" ry="5" fill="rgba(255,255,255,0.18)"/>
+      {/* Tree on island */}
+      <rect x="42" y="24" width="6" height="18" rx="2" fill="#92400E"/>
+      <circle cx="45" cy="20" r="12" fill="#10B981"/>
+      <circle cx="45" cy="20" r="12" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2"/>
+      <ellipse cx="40" cy="14" rx="6" ry="4" fill="rgba(255,255,255,0.22)" transform="rotate(-10 40 14)"/>
+      {/* Small mushroom */}
+      <rect x="58" y="44" width="4" height="6" rx="1" fill="#C08050"/>
+      <ellipse cx="60" cy="43" rx="7" ry="5" fill="#EF4444"/>
+      <ellipse cx="58" cy="41" rx="3" ry="2" fill="rgba(255,255,255,0.5)"/>
+      {/* Grass tufts */}
+      <path d="M20 48 Q22 42 24 48" stroke="#34D399" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <path d="M64 46 Q66 40 68 46" stroke="#34D399" strokeWidth="2" fill="none" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function IllustMountain({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <linearGradient id="mtn-body" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#60A5FA"/>
+          <stop offset="100%" stopColor="#1D4ED8"/>
+        </linearGradient>
+        <linearGradient id="mtn-face" x1="25%" y1="0%" x2="75%" y2="100%">
+          <stop offset="0%" stopColor="#3B82F6"/>
+          <stop offset="100%" stopColor="#1E3A8A"/>
+        </linearGradient>
+        <linearGradient id="mtn-snow" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF"/>
+          <stop offset="100%" stopColor="#DBEAFE"/>
+        </linearGradient>
+      </defs>
+      {/* Shadow at base */}
+      <ellipse cx="45" cy="78" rx="38" ry="9" fill="rgba(0,0,0,0.2)"/>
+      {/* Mountain shadow side */}
+      <path d="M45 10 L80 78 L45 78 Z" fill="url(#mtn-body)" opacity="0.5"/>
+      {/* Mountain main */}
+      <path d="M45 10 L80 78 L10 78 Z" fill="url(#mtn-face)"/>
+      {/* Lit face (left side) */}
+      <path d="M45 10 L28 68 L10 78 Z" fill="rgba(255,255,255,0.12)"/>
+      {/* Ridge line */}
+      <path d="M22 68 L45 10 L68 68" stroke="rgba(255,255,255,0.08)" strokeWidth="1" fill="none"/>
+      {/* Snow cap */}
+      <path d="M33 36 Q45 10 57 36 Q51 32 45 34 Q39 32 33 36Z" fill="url(#mtn-snow)"/>
+      {/* Snow shadow */}
+      <path d="M39 34 Q45 30 51 34 Q49 36 45 35 Q41 36 39 34Z" fill="rgba(200,220,255,0.6)"/>
+      {/* Secondary peak */}
+      <path d="M68 40 L85 72 L50 72 Z" fill="url(#mtn-face)" opacity="0.7"/>
+      <path d="M62 52 Q68 40 74 52" fill="rgba(240,248,255,0.85)"/>
+      {/* Ground */}
+      <ellipse cx="45" cy="78" rx="40" ry="10" fill="#1E3A8A"/>
+    </svg>
+  )
+}
+
+function IllustPlanet({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <radialGradient id="planet-body" cx="38%" cy="32%" r="60%">
+          <stop offset="0%" stopColor="#A78BFA"/>
+          <stop offset="55%" stopColor="#6D28D9"/>
+          <stop offset="100%" stopColor="#3B0764"/>
+        </radialGradient>
+        <radialGradient id="planet-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.4"/>
+          <stop offset="100%" stopColor="#7C3AED" stopOpacity="0"/>
+        </radialGradient>
+        <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#C4B5FD" stopOpacity="0.8"/>
+          <stop offset="30%" stopColor="#A78BFA" stopOpacity="0.95"/>
+          <stop offset="70%" stopColor="#7C3AED" stopOpacity="0.9"/>
+          <stop offset="100%" stopColor="#4C1D95" stopOpacity="0.6"/>
+        </linearGradient>
+      </defs>
+      {/* Ambient glow */}
+      <circle cx="45" cy="44" r="38" fill="url(#planet-glow)"/>
+      {/* Ring back half */}
+      <ellipse cx="45" cy="46" rx="40" ry="10" fill="none" stroke="url(#ring-grad)" strokeWidth="5" strokeDasharray="0,125,126,0"/>
+      {/* Planet body */}
+      <circle cx="45" cy="44" r="26" fill="url(#planet-body)"/>
+      {/* Surface bands */}
+      <ellipse cx="45" cy="38" rx="24" ry="6" fill="none" stroke="rgba(167,139,250,0.3)" strokeWidth="2"/>
+      <ellipse cx="45" cy="50" rx="22" ry="5" fill="none" stroke="rgba(109,40,217,0.4)" strokeWidth="2"/>
+      {/* Crater */}
+      <circle cx="38" cy="36" r="5" fill="rgba(0,0,0,0.2)"/>
+      <circle cx="38" cy="35" r="4" fill="rgba(124,58,237,0.4)"/>
+      {/* Specular */}
+      <ellipse cx="35" cy="30" rx="10" ry="6" fill="rgba(255,255,255,0.35)" transform="rotate(-20 35 30)"/>
+      {/* Ring front half */}
+      <ellipse cx="45" cy="46" rx="40" ry="10" fill="none" stroke="url(#ring-grad)" strokeWidth="5" strokeDasharray="125,0,0,126"/>
+      {/* Stars */}
+      <circle cx="12" cy="18" r="1.5" fill="#E9D5FF"/>
+      <circle cx="76" cy="12" r="1" fill="#DDD6FE"/>
+      <circle cx="82" cy="70" r="1.5" fill="#C4B5FD"/>
+      <circle cx="8" cy="62" r="1" fill="#EDE9FE"/>
+    </svg>
+  )
+}
+
+function IllustFlower({ size = 90, color = '#F472B6' }: { size?: number; color?: string }) {
+  const petal = (angle: number) => {
+    const rad = angle * Math.PI / 180
+    const cx = 45 + 18 * Math.cos(rad)
+    const cy = 45 + 18 * Math.sin(rad)
+    return <ellipse key={angle} cx={cx} cy={cy} rx="8" ry="12" fill={color} fillOpacity="0.88" transform={`rotate(${angle} ${cx} ${cy})`}/>
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <radialGradient id={`flower-center-${color.replace('#','')}`} cx="40%" cy="35%" r="60%">
+          <stop offset="0%" stopColor="#FEF08A"/>
+          <stop offset="100%" stopColor="#EAB308"/>
+        </radialGradient>
+      </defs>
+      {/* Shadow */}
+      <ellipse cx="46" cy="76" rx="12" ry="4" fill="rgba(0,0,0,0.15)"/>
+      {/* Stem */}
+      <rect x="43" y="60" width="4" height="18" rx="2" fill="#4ADE80"/>
+      {/* Leaf */}
+      <ellipse cx="52" cy="67" rx="10" ry="5" fill="#22C55E" transform="rotate(30 52 67)"/>
+      {/* Petals */}
+      {[0, 45, 90, 135, 180, 225, 270, 315].map(a => petal(a))}
+      {/* Petal highlight layer */}
+      {[0, 90, 180, 270].map(a => {
+        const rad = a * Math.PI / 180
+        const cx = 45 + 18 * Math.cos(rad)
+        const cy = 45 + 18 * Math.sin(rad)
+        return <ellipse key={`h${a}`} cx={cx-1} cy={cy-1.5} rx="4" ry="6" fill="rgba(255,255,255,0.2)" transform={`rotate(${a} ${cx} ${cy})`}/>
+      })}
+      {/* Center */}
+      <circle cx="45" cy="45" r="12" fill={`url(#flower-center-${color.replace('#','')})`}/>
+      <circle cx="42" cy="41" r="4" fill="rgba(255,255,255,0.45)"/>
+    </svg>
+  )
+}
+
+function IllustSparkle({ size = 90, type = 'burst' }: { size?: number; type?: 'burst' | 'cross' | 'scatter' }) {
+  if (type === 'cross') return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <radialGradient id="sp-cross" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FFF7AE"/>
+          <stop offset="100%" stopColor="#FFD54A"/>
+        </radialGradient>
+      </defs>
+      <circle cx="45" cy="45" r="30" fill="#FFD54A" opacity="0.12"/>
+      <path d="M45 10 L47.5 38 L45 45 L42.5 38Z" fill="url(#sp-cross)"/>
+      <path d="M45 80 L47.5 52 L45 45 L42.5 52Z" fill="url(#sp-cross)"/>
+      <path d="M10 45 L38 42.5 L45 45 L38 47.5Z" fill="url(#sp-cross)"/>
+      <path d="M80 45 L52 42.5 L45 45 L52 47.5Z" fill="url(#sp-cross)"/>
+      <path d="M45 10 L47.5 38 L45 45 L42.5 38Z" fill="url(#sp-cross)" transform="rotate(45 45 45)"/>
+      <path d="M45 80 L47.5 52 L45 45 L42.5 52Z" fill="url(#sp-cross)" transform="rotate(45 45 45)"/>
+      <path d="M10 45 L38 42.5 L45 45 L38 47.5Z" fill="url(#sp-cross)" transform="rotate(45 45 45)"/>
+      <path d="M80 45 L52 42.5 L45 45 L52 47.5Z" fill="url(#sp-cross)" transform="rotate(45 45 45)"/>
+      <circle cx="45" cy="45" r="6" fill="#FFF7AE"/>
+    </svg>
+  )
+  if (type === 'scatter') return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      {[
+        { cx:45, cy:20, r:5, color:'#FFE566' },
+        { cx:70, cy:30, r:3.5, color:'#FFD54A' },
+        { cx:22, cy:35, r:4, color:'#FFB800' },
+        { cx:75, cy:55, r:3, color:'#FFE566' },
+        { cx:15, cy:58, r:3.5, color:'#FFD54A' },
+        { cx:60, cy:72, r:4, color:'#FFB800' },
+        { cx:30, cy:70, r:3, color:'#FFE566' },
+        { cx:45, cy:68, r:5, color:'#FFD54A' },
+      ].map(({cx,cy,r,color},i) => (
+        <g key={i}>
+          <path d={`M${cx} ${cy-r*2.5} L${cx+r*0.6} ${cy-r*0.6} L${cx+r*2.5} ${cy} L${cx+r*0.6} ${cy+r*0.6} L${cx} ${cy+r*2.5} L${cx-r*0.6} ${cy+r*0.6} L${cx-r*2.5} ${cy} L${cx-r*0.6} ${cy-r*0.6}Z`} fill={color}/>
+        </g>
+      ))}
+    </svg>
+  )
+  // default burst
+  return (
+    <svg width={size} height={size} viewBox="0 0 90 90" fill="none">
+      <defs>
+        <radialGradient id="sp-burst" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FFF7AE"/>
+          <stop offset="100%" stopColor="#FFB800"/>
+        </radialGradient>
+      </defs>
+      <circle cx="45" cy="45" r="36" fill="#FFD54A" opacity="0.1"/>
+      <circle cx="45" cy="45" r="24" fill="#FFD54A" opacity="0.15"/>
+      {[0,30,60,90,120,150,180,210,240,270,300,330].map(a => {
+        const r1 = 12, r2 = a % 60 === 0 ? 34 : 26
+        const rad = a * Math.PI / 180
+        const x1 = 45 + r1 * Math.cos(rad), y1 = 45 + r1 * Math.sin(rad)
+        const x2 = 45 + r2 * Math.cos(rad), y2 = 45 + r2 * Math.sin(rad)
+        return <line key={a} x1={x1} y1={y1} x2={x2} y2={y2} stroke={a % 60 === 0 ? '#FFE566' : '#FFD54A'} strokeWidth={a % 60 === 0 ? 3 : 1.5} strokeLinecap="round"/>
+      })}
+      <circle cx="45" cy="45" r="11" fill="url(#sp-burst)"/>
+    </svg>
+  )
+}
+
+function IllustMascotCelebrate({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={Math.round(size * 1.2)} viewBox="0 0 90 108" fill="none">
+      <defs>
+        <radialGradient id="mc-body" cx="42%" cy="30%" r="62%">
+          <stop offset="0%" stopColor="#FF9F60"/>
+          <stop offset="100%" stopColor="#E05A00"/>
+        </radialGradient>
+        <radialGradient id="mc-face" cx="45%" cy="35%" r="60%">
+          <stop offset="0%" stopColor="#FFD4A8"/>
+          <stop offset="100%" stopColor="#FFB070"/>
+        </radialGradient>
+      </defs>
+      {/* Arms raised */}
+      <ellipse cx="16" cy="52" rx="7" ry="10" fill="#E05A00" transform="rotate(40 16 52)"/>
+      <ellipse cx="74" cy="52" rx="7" ry="10" fill="#E05A00" transform="rotate(-40 74 52)"/>
+      {/* Body */}
+      <rect x="28" y="60" width="34" height="32" rx="12" fill="#E05A00"/>
+      {/* Belly */}
+      <ellipse cx="45" cy="75" rx="12" ry="12" fill="#FFD4A8"/>
+      {/* Head */}
+      <circle cx="45" cy="42" r="28" fill="url(#mc-body)"/>
+      {/* Face plate */}
+      <ellipse cx="45" cy="46" rx="18" ry="16" fill="url(#mc-face)"/>
+      {/* Eyes - happy closed crescents */}
+      <path d="M35 40 Q38 35 41 40" stroke="#3D1A00" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      <path d="M49 40 Q52 35 55 40" stroke="#3D1A00" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      {/* Smile */}
+      <path d="M36 50 Q45 60 54 50" stroke="#3D1A00" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      {/* Cheeks */}
+      <circle cx="32" cy="50" r="6" fill="#FF7F7F" opacity="0.45"/>
+      <circle cx="58" cy="50" r="6" fill="#FF7F7F" opacity="0.45"/>
+      {/* Ears */}
+      <path d="M22 22 Q18 10 30 14 Q26 20 22 22Z" fill="#E05A00"/>
+      <path d="M68 22 Q72 10 60 14 Q64 20 68 22Z" fill="#E05A00"/>
+      <path d="M24 21 Q21 13 29 15 Q26 19 24 21Z" fill="#FF9F60"/>
+      <path d="M66 21 Q69 13 61 15 Q64 19 66 21Z" fill="#FF9F60"/>
+      {/* Tail */}
+      <path d="M62 85 Q80 90 74 78 Q68 68 62 72" fill="#E05A00"/>
+      <path d="M64 83 Q76 87 72 78 Q68 72 64 74" fill="#FFD4A8"/>
+      {/* Sparkles around */}
+      <path d="M8 30 L9 26 L10 30 L14 31 L10 32 L9 36 L8 32 L4 31Z" fill="#FFD54A"/>
+      <path d="M76 24 L77 21 L78 24 L81 25 L78 26 L77 29 L76 26 L73 25Z" fill="#FFD54A"/>
+      <path d="M14 70 L15 68 L16 70 L18 71 L16 72 L15 74 L14 72 L12 71Z" fill="#4FD37A" opacity="0.85"/>
+    </svg>
+  )
+}
+
+function IllustMascotThink({ size = 90 }: { size?: number }) {
+  return (
+    <svg width={size} height={Math.round(size * 1.2)} viewBox="0 0 90 108" fill="none">
+      <defs>
+        <radialGradient id="mth-body" cx="42%" cy="30%" r="62%">
+          <stop offset="0%" stopColor="#FF9F60"/>
+          <stop offset="100%" stopColor="#E05A00"/>
+        </radialGradient>
+        <radialGradient id="mth-face" cx="45%" cy="35%" r="60%">
+          <stop offset="0%" stopColor="#FFD4A8"/>
+          <stop offset="100%" stopColor="#FFB070"/>
+        </radialGradient>
+      </defs>
+      {/* Body */}
+      <rect x="28" y="60" width="34" height="32" rx="12" fill="#E05A00"/>
+      <ellipse cx="45" cy="75" rx="12" ry="12" fill="#FFD4A8"/>
+      {/* Arm right (raised to chin) */}
+      <ellipse cx="66" cy="65" rx="7" ry="10" fill="#E05A00" transform="rotate(-20 66 65)"/>
+      {/* Arm left */}
+      <ellipse cx="24" cy="72" rx="6" ry="9" fill="#E05A00"/>
+      {/* Head */}
+      <circle cx="45" cy="42" r="28" fill="url(#mth-body)"/>
+      {/* Face plate */}
+      <ellipse cx="45" cy="46" rx="18" ry="16" fill="url(#mth-face)"/>
+      {/* Eyes - one squinting */}
+      <circle cx="38" cy="41" r="4" fill="#3D1A00"/>
+      <circle cx="39" cy="40" r="1.5" fill="white"/>
+      <path d="M50 39 Q53 36 56 39" stroke="#3D1A00" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      {/* Mouth - small hmm */}
+      <path d="M38 52 Q45 56 52 52" stroke="#3D1A00" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      {/* Cheek left only */}
+      <circle cx="32" cy="50" r="5" fill="#FF7F7F" opacity="0.4"/>
+      {/* Thought bubble */}
+      <circle cx="68" cy="26" r="11" fill="white" opacity="0.9"/>
+      <circle cx="60" cy="34" r="5" fill="white" opacity="0.9"/>
+      <circle cx="55" cy="40" r="3" fill="white" opacity="0.9"/>
+      <text x="68" y="30" textAnchor="middle" fontSize="12" fontFamily="sans-serif" fill="#E05A00">?</text>
+      {/* Ears */}
+      <path d="M22 22 Q18 10 30 14 Q26 20 22 22Z" fill="#E05A00"/>
+      <path d="M68 22 Q72 10 60 14 Q64 20 68 22Z" fill="#E05A00"/>
+      <path d="M24 21 Q21 13 29 15 Q26 19 24 21Z" fill="#FF9F60"/>
+      <path d="M66 21 Q69 13 61 15 Q64 19 66 21Z" fill="#FF9F60"/>
+      {/* Tail */}
+      <path d="M62 85 Q80 90 74 78 Q68 68 62 72" fill="#E05A00"/>
+      <path d="M64 83 Q76 87 72 78 Q68 72 64 74" fill="#FFD4A8"/>
+    </svg>
+  )
+}
+
+// ── Color palette data ────────────────────────────────────────────────────────
+
+const ILLUST_PALETTES = [
+  {
+    name: 'Sky System', emoji: '☁️',
+    swatches: [
+      { label: 'Sky Light',  hex: '#87CEEB', note: 'Daytime sky, clouds base' },
+      { label: 'Sky Mid',    hex: '#4DA6E8', note: 'Gradient sky middle' },
+      { label: 'Sky Deep',   hex: '#1D6FA4', note: 'Sky horizon depth' },
+      { label: 'Cloud White',hex: '#F0F8FF', note: 'Cloud highlight' },
+      { label: 'Cloud Shadow',hex: '#C8DFF8', note: 'Cloud shadow side' },
+    ]
+  },
+  {
+    name: 'Nature System', emoji: '🌿',
+    swatches: [
+      { label: 'Grass Light', hex: '#6EE7B7', note: 'Lit grass / canopy top' },
+      { label: 'Grass Mid',   hex: '#10B981', note: 'Mid grass, leaf' },
+      { label: 'Grass Dark',  hex: '#059669', note: 'Shadow grass' },
+      { label: 'Earth Light', hex: '#C8956A', note: 'Island earth top' },
+      { label: 'Earth Dark',  hex: '#7C4A14', note: 'Earth shadow / trunk' },
+    ]
+  },
+  {
+    name: 'Fire System', emoji: '🌋',
+    swatches: [
+      { label: 'Lava Light',  hex: '#FCA5A5', note: 'Crater glow' },
+      { label: 'Lava Mid',    hex: '#EF4444', note: 'Active lava' },
+      { label: 'Lava Deep',   hex: '#C2410C', note: 'Volcano shadow' },
+      { label: 'Smoke Light', hex: '#D1D5DB', note: 'Smoke highlight' },
+      { label: 'Smoke Dark',  hex: '#6B7280', note: 'Smoke shadow' },
+    ]
+  },
+  {
+    name: 'Cosmic System', emoji: '🌌',
+    swatches: [
+      { label: 'Cosmic Light', hex: '#A78BFA', note: 'Planet lit side' },
+      { label: 'Cosmic Mid',   hex: '#6D28D9', note: 'Planet body' },
+      { label: 'Cosmic Deep',  hex: '#3B0764', note: 'Planet shadow' },
+      { label: 'Ring Pale',    hex: '#C4B5FD', note: 'Ring lit side' },
+      { label: 'Star White',   hex: '#EDE9FE', note: 'Distant stars' },
+    ]
+  },
+  {
+    name: 'Gold / Reward', emoji: '✨',
+    swatches: [
+      { label: 'Gold Light',  hex: '#FFE566', note: 'Coin/star highlight' },
+      { label: 'Gold Mid',    hex: '#FFB800', note: 'Coin body' },
+      { label: 'Gold Deep',   hex: '#B87200', note: 'Coin shadow/ring' },
+      { label: 'Warm White',  hex: '#FFF5B0', note: 'Inner glow / sparkle' },
+      { label: 'Amber',       hex: '#FF9500', note: 'Star gradient end' },
+    ]
+  },
+  {
+    name: 'Character', emoji: '🦊',
+    swatches: [
+      { label: 'Fox Light',   hex: '#FF9F60', note: 'Body lit side' },
+      { label: 'Fox Mid',     hex: '#E05A00', note: 'Body main' },
+      { label: 'Face Cream',  hex: '#FFD4A8', note: 'Muzzle / belly' },
+      { label: 'Eye Dark',    hex: '#3D1A00', note: 'Eyes / outlines' },
+      { label: 'Blush',       hex: '#FF7F7F', note: 'Cheek blush' },
+    ]
+  },
+]
+
+// ── Principle cards ───────────────────────────────────────────────────────────
+
+const PRINCIPLES = [
+  {
+    title: 'No Outlines',
+    color: '#FF9B5C',
+    bg: 'rgba(255,155,92,0.12)',
+    desc: 'Shapes are defined purely by gradient and cast shadow — never a black border. Color contrast alone creates form.',
+    preview: () => (
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <defs>
+          <radialGradient id="p1-ball" cx="38%" cy="30%" r="60%">
+            <stop offset="0%" stopColor="#FF9B5C"/>
+            <stop offset="100%" stopColor="#C04A00"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="32" cy="46" rx="20" ry="6" fill="rgba(0,0,0,0.2)"/>
+        <circle cx="32" cy="30" r="22" fill="url(#p1-ball)"/>
+        <ellipse cx="24" cy="20" rx="9" ry="6" fill="rgba(255,255,255,0.4)" transform="rotate(-20 24 20)"/>
+      </svg>
+    ),
+  },
+  {
+    title: 'Top-Left Light',
+    color: '#FFD54A',
+    bg: 'rgba(255,213,74,0.12)',
+    desc: 'One consistent light source at ~315° (top-left). Every highlight and shadow obeys this rule across all illustrations.',
+    preview: () => (
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <defs>
+          <radialGradient id="p2-ball" cx="30%" cy="26%" r="65%">
+            <stop offset="0%" stopColor="#FFF7AE"/>
+            <stop offset="45%" stopColor="#FFD54A"/>
+            <stop offset="100%" stopColor="#CC8800"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="32" cy="48" rx="18" ry="5" fill="rgba(0,0,0,0.2)"/>
+        <circle cx="32" cy="30" r="20" fill="url(#p2-ball)"/>
+        {/* Light arrow */}
+        <line x1="10" y1="8" x2="24" y2="22" stroke="#FFE566" strokeWidth="2" strokeDasharray="3,2"/>
+        <polygon points="24,22 18,18 26,16" fill="#FFE566"/>
+      </svg>
+    ),
+  },
+  {
+    title: 'Layered Depth',
+    color: '#4FD37A',
+    bg: 'rgba(79,211,122,0.12)',
+    desc: 'Every object has: cast shadow → base gradient → surface detail → specular highlight. 4 layers create convincing 3D.',
+    preview: () => (
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <defs>
+          <linearGradient id="p3-base" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#34D399"/>
+            <stop offset="100%" stopColor="#065F46"/>
+          </linearGradient>
+        </defs>
+        {/* Cast shadow */}
+        <rect x="14" y="40" width="40" height="14" rx="6" fill="rgba(0,0,0,0.25)"/>
+        {/* Base */}
+        <rect x="10" y="34" width="40" height="14" rx="6" fill="url(#p3-base)"/>
+        {/* Top face */}
+        <rect x="10" y="22" width="40" height="14" rx="6" fill="#10B981"/>
+        {/* Specular */}
+        <rect x="14" y="24" width="18" height="6" rx="3" fill="rgba(255,255,255,0.32)"/>
+        {/* Labels */}
+        <text x="56" y="44" fontSize="7" fill="rgba(79,211,122,0.7)" fontFamily="monospace">shadow</text>
+        <text x="56" y="40" fontSize="7" fill="rgba(79,211,122,0.7)" fontFamily="monospace" style={{display:'none'}}/>
+      </svg>
+    ),
+  },
+  {
+    title: 'Gradient Fills',
+    color: '#818CF8',
+    bg: 'rgba(129,140,248,0.12)',
+    desc: 'Use 2–3 stop gradients, never flat fills. Radial for spherical shapes, linear (135°) for flat surfaces and blocks.',
+    preview: () => (
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <defs>
+          <linearGradient id="p4-lin" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#818CF8"/>
+            <stop offset="50%" stopColor="#6D28D9"/>
+            <stop offset="100%" stopColor="#3B0764"/>
+          </linearGradient>
+          <radialGradient id="p4-rad" cx="38%" cy="30%" r="60%">
+            <stop offset="0%" stopColor="#A78BFA"/>
+            <stop offset="100%" stopColor="#4C1D95"/>
+          </radialGradient>
+        </defs>
+        <rect x="8" y="20" width="22" height="30" rx="6" fill="url(#p4-lin)"/>
+        <circle cx="46" cy="35" r="16" fill="url(#p4-rad)"/>
+        <text x="8" y="56" fontSize="7" fill="rgba(129,140,248,0.7)" fontFamily="monospace">linear</text>
+        <text x="38" y="56" fontSize="7" fill="rgba(129,140,248,0.7)" fontFamily="monospace">radial</text>
+      </svg>
+    ),
+  },
+  {
+    title: 'Rounded Forms',
+    color: '#FB923C',
+    bg: 'rgba(251,146,60,0.12)',
+    desc: 'Minimum rx=8 on any rectangle. Prefer organic curves and path shapes. Hard corners only for intentional geometric contrast.',
+    preview: () => (
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <rect x="8" y="12" width="22" height="22" rx="0" fill="rgba(251,146,60,0.3)" stroke="#FB923C" strokeWidth="1.5"/>
+        <line x1="18" y1="34" x2="24" y2="40" stroke="#FB923C" strokeWidth="1.5" strokeDasharray="3,2"/>
+        <rect x="8" y="42" width="22" height="18" rx="9" fill="#FB923C"/>
+        <circle cx="46" cy="20" r="12" fill="#FB923C"/>
+        <path d="M36 44 Q46 38 56 44 Q56 58 46 58 Q36 58 36 44Z" fill="#FF6B00"/>
+        <text x="8" y="10" fontSize="7" fill="rgba(251,146,60,0.7)" fontFamily="monospace">❌ hard</text>
+        <text x="8" y="40" fontSize="7" fill="#FB923C" fontFamily="monospace">✓ round</text>
+      </svg>
+    ),
+  },
+  {
+    title: 'Soft Shadows',
+    color: '#6BCBFF',
+    bg: 'rgba(107,203,255,0.12)',
+    desc: 'Cast shadows are soft ellipses below objects, not hard drop shadows. Use feGaussianBlur or low-opacity ellipses only.',
+    preview: () => (
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <defs>
+          <radialGradient id="p6-obj" cx="40%" cy="30%" r="60%">
+            <stop offset="0%" stopColor="#7DD3FC"/>
+            <stop offset="100%" stopColor="#0369A1"/>
+          </radialGradient>
+        </defs>
+        {/* Hard shadow (crossed out) */}
+        <rect x="10" y="14" width="18" height="18" rx="5" fill="rgba(0,0,0,0.5)"/>
+        <rect x="8" y="12" width="18" height="18" rx="5" fill="#0369A1"/>
+        <line x1="6" y1="6" x2="30" y2="36" stroke="#EF4444" strokeWidth="2"/>
+        {/* Soft shadow (correct) */}
+        <ellipse cx="48" cy="45" rx="16" ry="5" fill="rgba(0,0,0,0.22)"/>
+        <circle cx="48" cy="36" r="14" fill="url(#p6-obj)"/>
+      </svg>
+    ),
+  },
+]
+
+// ── Main component ─────────────────────────────────────────────────────────────
+
+function IllustrationStyleGuide({ onBack }: { onBack: () => void }) {
+  const [activeTab, setActiveTab] = React.useState<IllustTab>('all')
+
+  const TABS: { id: IllustTab; label: string; emoji: string }[] = [
+    { id: 'all',        label: 'All',        emoji: '✦' },
+    { id: 'principles', label: 'Principles', emoji: '📐' },
+    { id: 'color',      label: 'Color',      emoji: '🎨' },
+    { id: 'characters', label: 'Character',  emoji: '🦊' },
+    { id: 'world',      label: 'World',      emoji: '🌍' },
+    { id: 'items',      label: 'Items',      emoji: '🪙' },
+    { id: 'effects',    label: 'Effects',    emoji: '✨' },
+  ]
+
+  const panelBg = 'rgba(20,10,2,0.72)'
+  const borderColor = 'rgba(255,155,92,0.1)'
+
+  const SectionTitle = ({ emoji, title, sub }: { emoji: string; title: string; sub?: string }) => (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 22 }}>{emoji}</span>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 20, color: '#FFF0E8', letterSpacing: '-0.3px' }}>{title}</div>
+      </div>
+      {sub && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12.5, color: 'rgba(255,155,92,0.65)', marginTop: 4, paddingLeft: 32 }}>{sub}</div>}
+    </div>
+  )
+
+  const IllustTile = ({ label, sublabel, children, colors }: {
+    label: string; sublabel?: string; children: React.ReactNode; accent?: string; colors?: string[]
+  }) => (
+    <div style={{
+      background: 'rgba(255,240,230,0.04)', borderRadius: 20,
+      border: `1px solid ${borderColor}`, padding: '18px 14px 14px',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+    }}>
+      {/* Canvas */}
+      <div style={{
+        width: 100, height: 100, borderRadius: 16,
+        background: 'radial-gradient(circle at 40% 30%, rgba(255,240,220,0.08) 0%, rgba(255,240,220,0.02) 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        border: '1px solid rgba(255,255,255,0.04)',
+      }}>
+        {children}
+      </div>
+      {/* Label */}
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12.5, color: '#FFF0E8' }}>{label}</div>
+        {sublabel && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10.5, color: 'rgba(255,155,92,0.6)', marginTop: 2 }}>{sublabel}</div>}
+      </div>
+      {/* Color dots */}
+      {colors && (
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {colors.map((c, i) => (
+            <div key={i} title={c} style={{ width: 12, height: 12, borderRadius: '50%', background: c, border: '1px solid rgba(255,255,255,0.12)' }}/>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  const showSection = (id: IllustTab) => activeTab === 'all' || activeTab === id
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0D0500', display: 'flex', flexDirection: 'column' }}>
+
+      {/* Header */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: 'rgba(13,5,0,0.92)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(255,155,92,0.12)',
+        padding: '14px 20px 12px',
+        display: 'flex', alignItems: 'center', gap: 14,
+      }}>
+        <button
+          onClick={onBack}
+          style={{
+            width: 38, height: 38, borderRadius: 12,
+            background: 'rgba(255,155,92,0.12)', border: '1px solid rgba(255,155,92,0.25)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 3L5 8L10 13" stroke="rgba(255,155,92,0.9)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 17, color: '#FFF0E8', letterSpacing: '-0.3px' }}>
+            Illustration Guide
+          </div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(255,155,92,0.6)', marginTop: 1 }}>
+            SVG Style · Color Language · Character System
+          </div>
+        </div>
+        <div style={{
+          background: 'rgba(255,155,92,0.14)', borderRadius: 10,
+          padding: '4px 10px', border: '1px solid rgba(255,155,92,0.2)',
+          fontFamily: 'Nunito', fontWeight: 900, fontSize: 10.5, color: 'rgba(255,155,92,0.85)',
+        }}>
+          v1.0
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{
+        position: 'sticky', top: 64, zIndex: 40,
+        background: 'rgba(13,5,0,0.88)', backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255,155,92,0.08)',
+        padding: '10px 16px',
+        display: 'flex', gap: 6, overflowX: 'auto',
+      }}>
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            style={{
+              padding: '6px 12px', borderRadius: 999,
+              border: activeTab === t.id ? '1px solid rgba(255,155,92,0.5)' : '1px solid transparent',
+              background: activeTab === t.id ? 'rgba(255,155,92,0.18)' : 'rgba(255,255,255,0.04)',
+              cursor: 'pointer', whiteSpace: 'nowrap',
+              fontFamily: 'Nunito', fontWeight: 900, fontSize: 12,
+              color: activeTab === t.id ? '#FF9B5C' : 'rgba(255,240,230,0.55)',
+              display: 'flex', alignItems: 'center', gap: 5,
+              transition: 'all 0.18s ease',
+            }}
+          >
+            <span style={{ fontSize: 12 }}>{t.emoji}</span> {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 16px 64px' }}>
+
+        {/* ── Principles ── */}
+        {showSection('principles') && (
+          <div style={{ marginBottom: 36 }}>
+            <SectionTitle emoji="📐" title="Core Principles" sub="6 rules that unify every illustration in MathBlocks"/>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {PRINCIPLES.map((p, i) => (
+                <div key={i} style={{
+                  background: p.bg, borderRadius: 18, border: `1px solid ${p.color}28`,
+                  padding: '14px 16px', display: 'flex', gap: 14, alignItems: 'flex-start',
+                }}>
+                  <div style={{
+                    width: 70, height: 70, borderRadius: 14, flexShrink: 0,
+                    background: 'rgba(0,0,0,0.3)', border: `1px solid ${p.color}30`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {p.preview()}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 14.5, color: p.color, marginBottom: 5 }}>
+                      {String(i+1).padStart(2,'0')} · {p.title}
+                    </div>
+                    <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: 'rgba(255,240,230,0.7)', lineHeight: 1.55 }}>
+                      {p.desc}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Color Language ── */}
+        {showSection('color') && (
+          <div style={{ marginBottom: 36 }}>
+            <SectionTitle emoji="🎨" title="Color Language" sub="6 themed palettes · Gradient stops · Usage notes"/>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {ILLUST_PALETTES.map((pal, pi) => (
+                <div key={pi} style={{ background: panelBg, borderRadius: 18, border: `1px solid ${borderColor}`, padding: '14px 16px' }}>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 13.5, color: '#FFF0E8', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span>{pal.emoji}</span> {pal.name}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {pal.swatches.map((sw, si) => (
+                      <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 32, height: 24, borderRadius: 8, background: sw.hex, border: '1px solid rgba(255,255,255,0.12)', flexShrink: 0 }}/>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: '#FFF0E8' }}>{sw.label}</span>
+                          <span style={{ fontFamily: 'monospace', fontSize: 10.5, color: 'rgba(255,155,92,0.65)', marginLeft: 8 }}>{sw.hex}</span>
+                        </div>
+                        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10.5, color: 'rgba(255,240,230,0.45)', textAlign: 'right', maxWidth: 130 }}>{sw.note}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Characters ── */}
+        {showSection('characters') && (
+          <div style={{ marginBottom: 36 }}>
+            <SectionTitle emoji="🦊" title="Character System" sub="Blox the Fox · 4 expression states · Anatomy guide"/>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+              <IllustTile label="Happy" sublabel="Correct answer" colors={['#FF9F60','#E05A00','#FFD4A8','#FF7F7F']} >
+                <Mascot size={80}/>
+              </IllustTile>
+              <IllustTile label="Celebrating" sublabel="Level complete" colors={['#FF9F60','#E05A00','#FFD54A']}>
+                <IllustMascotCelebrate size={80}/>
+              </IllustTile>
+              <IllustTile label="Thinking" sublabel="Hint / puzzle" colors={['#FF9F60','#E05A00','#FFFFFF']}>
+                <IllustMascotThink size={80}/>
+              </IllustTile>
+              <IllustTile label="Waving" sublabel="Welcome / idle" colors={['#FF9F60','#E05A00','#FFD4A8']}>
+                <Mascot size={80}/>
+              </IllustTile>
+            </div>
+            {/* Anatomy panel */}
+            <div style={{ background: panelBg, borderRadius: 18, border: `1px solid ${borderColor}`, padding: '16px 18px' }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 13.5, color: '#FFF0E8', marginBottom: 14 }}>Anatomy Notes</div>
+              {[
+                { part: 'Head',       spec: 'Circle, r=28 · radial gradient top-left lit' },
+                { part: 'Face plate', spec: 'Ellipse rx=18 ry=16 · warm cream #FFD4A8→#FFB070' },
+                { part: 'Ears',       spec: 'Bezier path · fox orange outer, peach inner' },
+                { part: 'Eyes',       spec: 'r=4 circles (normal) or crescent paths (happy)' },
+                { part: 'Cheeks',     spec: '#FF7F7F circles, 40–45% opacity, r=5–6' },
+                { part: 'Blush',      spec: 'Only shown in happy/celebrate expressions' },
+                { part: 'Body',       spec: 'Rounded rect rx=12 · darker than head (#E05A00)' },
+                { part: 'Tail',       spec: 'Bezier path · orange body + cream tip #FFD4A8' },
+                { part: 'Shadow',     spec: 'Ellipse below feet, rgba(0,0,0,0.18–0.22)' },
+              ].map((row, i) => (
+                <div key={i} style={{
+                  display: 'flex', gap: 10, alignItems: 'baseline',
+                  borderBottom: i < 8 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  paddingBottom: 9, marginBottom: 9,
+                }}>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: '#FF9B5C', width: 70, flexShrink: 0 }}>{row.part}</div>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11.5, color: 'rgba(255,240,230,0.65)', lineHeight: 1.5 }}>{row.spec}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── World Elements ── */}
+        {showSection('world') && (
+          <div style={{ marginBottom: 36 }}>
+            <SectionTitle emoji="🌍" title="World Elements" sub="Nature · Sky · Mountain · Castle · Cosmic"/>
+
+            {/* Nature sub-section */}
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: 'rgba(79,211,122,0.8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>🌿 Nature Forest</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+              <IllustTile label="Pine Tree" sublabel="Forest world" colors={['#34D399','#059669','#92400E']}>
+                <IllustTreePine size={80}/>
+              </IllustTile>
+              <IllustTile label="Round Tree" sublabel="Oak / fruit" colors={['#6EE7B7','#10B981','#EF4444']}>
+                <IllustTreeRound size={80}/>
+              </IllustTile>
+              <IllustTile label="Flower" sublabel="Decoration" colors={['#F472B6','#EAB308','#22C55E']}>
+                <IllustFlower size={80}/>
+              </IllustTile>
+            </div>
+
+            {/* Sky sub-section */}
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: 'rgba(107,203,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>☁️ Sky Layer</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+              <IllustTile label="Cloud S" sublabel="Foreground" colors={['#F0F8FF','#C8DFF8']}>
+                <IllustCloud size={80} variant="small"/>
+              </IllustTile>
+              <IllustTile label="Cloud M" sublabel="Mid layer" colors={['#F0F8FF','#C8DFF8']}>
+                <IllustCloud size={80} variant="medium"/>
+              </IllustTile>
+              <IllustTile label="Cloud L" sublabel="Background" colors={['#F0F8FF','#EAF3FF']}>
+                <IllustCloud size={80} variant="large"/>
+              </IllustTile>
+            </div>
+
+            {/* Terrain sub-section */}
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: 'rgba(255,155,92,0.8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>🏔️ Terrain</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+              <IllustTile label="Float Island" sublabel="Gravity-defying" colors={['#6EE7B7','#C8956A','#7C4A14']}>
+                <IllustIsland size={80}/>
+              </IllustTile>
+              <IllustTile label="Mountain" sublabel="Snow-capped peak" colors={['#60A5FA','#1D4ED8','#FFFFFF']}>
+                <IllustMountain size={80}/>
+              </IllustTile>
+            </div>
+
+            {/* Cosmic sub-section */}
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: 'rgba(167,139,250,0.8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>🪐 Cosmic</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <IllustTile label="Planet" sublabel="Galaxy world" colors={['#A78BFA','#6D28D9','#C4B5FD']}>
+                <IllustPlanet size={80}/>
+              </IllustTile>
+              <IllustTile label="World Tiles" sublabel="See terrain SVGs" colors={['#059669','#0284C7','#7C3AED','#DC2626','#6D28D9']}>
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                  <rect x="6" y="6" width="28" height="28" rx="8" fill="#059669"/>
+                  <rect x="6" y="46" width="28" height="28" rx="8" fill="#0284C7"/>
+                  <rect x="46" y="6" width="28" height="28" rx="8" fill="#7C3AED"/>
+                  <rect x="46" y="46" width="28" height="28" rx="8" fill="#DC2626"/>
+                  <text x="20" y="26" textAnchor="middle" fontSize="14" fill="white" style={{userSelect:'none'}}>🌲</text>
+                  <text x="20" y="66" textAnchor="middle" fontSize="14" fill="white" style={{userSelect:'none'}}>🏔️</text>
+                  <text x="60" y="26" textAnchor="middle" fontSize="14" fill="white" style={{userSelect:'none'}}>🏰</text>
+                  <text x="60" y="66" textAnchor="middle" fontSize="14" fill="white" style={{userSelect:'none'}}>🌋</text>
+                </svg>
+              </IllustTile>
+            </div>
+          </div>
+        )}
+
+        {/* ── Items ── */}
+        {showSection('items') && (
+          <div style={{ marginBottom: 36 }}>
+            <SectionTitle emoji="🪙" title="Items & Collectibles" sub="Coins · Stars · Treasure · Math Blocks"/>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+              <IllustTile label="Gold Coin" sublabel="Currency · reward" colors={['#FFE566','#FFB800','#B87200']}>
+                <IllustCoin size={80}/>
+              </IllustTile>
+              <IllustTile label="Gold Star" sublabel="Score · rating" colors={['#FFE566','#FF9500']}>
+                <IllustStar size={80}/>
+              </IllustTile>
+              <IllustTile label="Chest Closed" sublabel="Reward locked" colors={['#A35010','#7C3008','#FFD54A']}>
+                <IllustTreasureClosed size={80}/>
+              </IllustTile>
+              <IllustTile label="Chest Open" sublabel="Reward revealed" colors={['#A35010','#FFD54A','#FFF5B0']}>
+                <IllustTreasureOpen size={80}/>
+              </IllustTile>
+            </div>
+
+            {/* Math Blocks */}
+            <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: 'rgba(255,155,92,0.8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>🧮 Math Blocks</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+              <IllustTile label="Plus" sublabel="+">
+                <IllustMathBlock op="+" color="#4FD37A" darkColor="#1E7A44" size={70}/>
+              </IllustTile>
+              <IllustTile label="Minus" sublabel="−">
+                <IllustMathBlock op="−" color="#60A5FA" darkColor="#1D4ED8" size={70}/>
+              </IllustTile>
+              <IllustTile label="Times" sublabel="×">
+                <IllustMathBlock op="×" color="#FF9B5C" darkColor="#C04A00" size={70}/>
+              </IllustTile>
+              <IllustTile label="Divide" sublabel="÷">
+                <IllustMathBlock op="÷" color="#A78BFA" darkColor="#4C1D95" size={70}/>
+              </IllustTile>
+            </div>
+
+            {/* Block construction spec */}
+            <div style={{ background: panelBg, borderRadius: 18, border: `1px solid ${borderColor}`, padding: '14px 16px', marginTop: 16 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 13, color: '#FFF0E8', marginBottom: 10 }}>Block Construction Spec</div>
+              {[
+                { label: 'Size', value: '56×56 (game key) · 70×70 (keyboard) · 90×90 (style guide)' },
+                { label: 'Corner radius', value: 'rx=14 on all blocks, scales with size' },
+                { label: '3D depth', value: '10px bottom offset, same color darkened 30%' },
+                { label: 'Gradient', value: 'linearGradient 135° · light top-left → dark bottom-right' },
+                { label: 'Specular', value: 'White rect rx=5, top-left, 22% opacity · w=45% of block width' },
+                { label: 'Symbol', value: 'Nunito 900 · white 90% opacity · centered with textAnchor=middle' },
+              ].map((row, i) => (
+                <div key={i} style={{
+                  display: 'flex', gap: 8, alignItems: 'baseline',
+                  borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  paddingBottom: 8, marginBottom: 8,
+                }}>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11.5, color: '#FF9B5C', width: 82, flexShrink: 0 }}>{row.label}</div>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(255,240,230,0.65)' }}>{row.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Effects ── */}
+        {showSection('effects') && (
+          <div style={{ marginBottom: 36 }}>
+            <SectionTitle emoji="✨" title="Effects & Particles" sub="Sparkles · Flowers · Light rays · Burst types"/>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+              <IllustTile label="4-point Burst" sublabel="Sparkle cross" colors={['#FFF7AE','#FFD54A']}>
+                <IllustSparkle size={80} type="cross"/>
+              </IllustTile>
+              <IllustTile label="Ray Burst" sublabel="Light rays" colors={['#FFE566','#FFD54A','#FFB800']}>
+                <IllustSparkle size={80} type="burst"/>
+              </IllustTile>
+              <IllustTile label="Scatter" sublabel="Particle field" colors={['#FFE566','#FFD54A','#FFB800']}>
+                <IllustSparkle size={80} type="scatter"/>
+              </IllustTile>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+              <IllustTile label="Flower Pink" sublabel="Decoration" colors={['#F472B6','#FEF08A','#22C55E']}>
+                <IllustFlower size={80} color="#F472B6"/>
+              </IllustTile>
+              <IllustTile label="Flower Blue" sublabel="Variation" colors={['#60A5FA','#FEF08A','#22C55E']}>
+                <IllustFlower size={80} color="#60A5FA"/>
+              </IllustTile>
+              <IllustTile label="Flower Orange" sublabel="Accent" colors={['#FB923C','#FEF08A','#22C55E']}>
+                <IllustFlower size={80} color="#FB923C"/>
+              </IllustTile>
+            </div>
+
+            {/* Gradient construction diagram */}
+            <div style={{ background: panelBg, borderRadius: 18, border: `1px solid ${borderColor}`, padding: '16px 18px', marginTop: 16 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 13.5, color: '#FFF0E8', marginBottom: 14 }}>Gradient Construction</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  { type: 'radialGradient', cx: '38%', cy: '30%', r: '60%', use: 'Spheres, coins, round elements', stops: ['#FFXXXX at 0%','#MidColor at 55%','#DarkColor at 100%'] },
+                  { type: 'linearGradient', cx: 'x1=20%', cy: 'y1=0%', r: 'x2=80% y2=100%', use: 'Blocks, terrain, flat planes', stops: ['#LightColor at 0%','#DarkColor at 100%'] },
+                  { type: 'linearGradient', cx: 'x1=0%', cy: 'y1=0%', r: 'x2=0% y2=100%', use: 'Vertical surfaces, mountain sides', stops: ['#TopColor at 0%','#BottomColor at 100%'] },
+                ].map((g, i) => (
+                  <div key={i} style={{ borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingBottom: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <code style={{ fontFamily: 'monospace', fontSize: 10.5, color: '#818CF8', background: 'rgba(99,102,241,0.12)', borderRadius: 5, padding: '2px 6px' }}>{g.type}</code>
+                      <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(255,240,230,0.5)' }}>{g.use}</span>
+                    </div>
+                    <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(255,155,92,0.7)', lineHeight: 1.7, paddingLeft: 8 }}>
+                      cx="{g.cx}" cy="{g.cy}" r="{g.r}"<br/>
+                      {g.stops.map((s,j) => <span key={j}><br/>  &lt;stop offset="{s}"/&gt;</span>)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Specular highlight guide */}
+            <div style={{ background: panelBg, borderRadius: 18, border: `1px solid ${borderColor}`, padding: '16px 18px', marginTop: 12 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 13.5, color: '#FFF0E8', marginBottom: 12 }}>Specular Highlight Rules</div>
+              {[
+                { rule: 'Position',  val: 'Top-left quadrant of the shape (315° light source)' },
+                { rule: 'Shape',     val: 'Ellipse on circles / spheres. Rounded rect on flat surfaces' },
+                { rule: 'Size',      val: '30–45% of parent shape width, proportional' },
+                { rule: 'Opacity',   val: '22–55% white (rgba(255,255,255,0.22–0.55))' },
+                { rule: 'Rotation',  val: 'Tilt ellipse ~-20° to align with light angle' },
+                { rule: 'Blur',      val: 'No blur needed — opacity + shape is enough' },
+              ].map((r, i) => (
+                <div key={i} style={{
+                  display: 'flex', gap: 10,
+                  borderBottom: i < 5 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  paddingBottom: 8, marginBottom: 8,
+                }}>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11.5, color: '#FF9B5C', width: 72, flexShrink: 0 }}>{r.rule}</div>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11.5, color: 'rgba(255,240,230,0.65)', lineHeight: 1.5 }}>{r.val}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── All: hero banner ── */}
+        {activeTab === 'all' && (
+          <div style={{ marginTop: 10, marginBottom: 16 }}>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(255,155,92,0.12) 0%, rgba(255,200,80,0.06) 100%)',
+              borderRadius: 22, border: '1px solid rgba(255,155,92,0.18)',
+              padding: '20px 18px', textAlign: 'center',
+            }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 13, color: 'rgba(255,155,92,0.7)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Quick Reference</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+                {[
+                  { k: 'Light source', v: '315° top-left' },
+                  { k: 'Min corner', v: 'rx / ry = 8' },
+                  { k: 'Shadow alpha', v: '0.18 – 0.25' },
+                  { k: 'Specular alpha', v: '0.22 – 0.55' },
+                  { k: 'Stroke', v: 'None (painterly)' },
+                  { k: 'Gradient stops', v: '2 – 3 stops max' },
+                ].map((item, i) => (
+                  <div key={i} style={{
+                    background: 'rgba(255,155,92,0.08)', borderRadius: 10, border: '1px solid rgba(255,155,92,0.15)',
+                    padding: '5px 10px', display: 'flex', gap: 6, alignItems: 'center',
+                  }}>
+                    <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10.5, color: 'rgba(255,240,230,0.55)' }}>{item.k}:</span>
+                    <span style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 10.5, color: '#FF9B5C' }}>{item.v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  )
+}
+
+// ─── Design Token Page ────────────────────────────────────────────────────────
+
+type TokenTab = 'colors' | 'type' | 'spacing' | 'radius' | 'elevation' | 'shadow' |
+  'opacity' | 'border' | 'grid' | 'breakpoints' | 'icons' | 'buttons' | 'cards' |
+  'duration' | 'easing' | 'naming'
+
+interface DToken { name: string; value: string; desc?: string }
+interface DGroup { group: string; tokens: DToken[] }
+
+// ── Token data ────────────────────────────────────────────────────────────────
+
+const DT_COLORS: DGroup[] = [
+  { group: 'Brand', tokens: [
+    { name: '--mb-color-brand',        value: '#FF9B5C', desc: 'Primary brand — CTAs, highlights' },
+    { name: '--mb-color-brand-dark',   value: '#C04A00', desc: 'Ledge / pressed / shadow' },
+    { name: '--mb-color-brand-light',  value: '#FFD4A8', desc: 'Tint backgrounds, hover' },
+    { name: '--mb-color-brand-faint',  value: 'rgba(255,155,92,0.12)', desc: 'Ghost fills' },
+  ]},
+  { group: 'Semantic', tokens: [
+    { name: '--mb-color-success',       value: '#4FD37A', desc: 'Correct, earned, completed' },
+    { name: '--mb-color-success-dark',  value: '#35B862', desc: 'Ledge / pressed' },
+    { name: '--mb-color-info',          value: '#6BCBFF', desc: 'Hints, learning, sky' },
+    { name: '--mb-color-info-dark',     value: '#3BAEE5', desc: 'Ledge / pressed' },
+    { name: '--mb-color-warning',       value: '#FFD54A', desc: 'Stars, rewards, caution' },
+    { name: '--mb-color-warning-dark',  value: '#E6BB2A', desc: 'Ledge / pressed' },
+    { name: '--mb-color-danger',        value: '#FF7B7B', desc: 'Wrong answers, lives lost' },
+    { name: '--mb-color-danger-dark',   value: '#E85A5A', desc: 'Ledge / pressed' },
+    { name: '--mb-color-accent',        value: '#A78BFA', desc: 'Premium, achievements, magic' },
+    { name: '--mb-color-accent-dark',   value: '#8B5CF6', desc: 'Ledge / pressed' },
+    { name: '--mb-color-orange',        value: '#FFB347', desc: 'Multiplication / division block' },
+    { name: '--mb-color-orange-dark',   value: '#E8953A', desc: 'Ledge / pressed' },
+  ]},
+  { group: 'Surface', tokens: [
+    { name: '--mb-color-bg',            value: '#F6F7FB', desc: 'App canvas background' },
+    { name: '--mb-color-surface',       value: '#FFFFFF', desc: 'Card / sheet surface' },
+    { name: '--mb-color-surface-mid',   value: '#F0F2F8', desc: 'Raised / alternate surface' },
+    { name: '--mb-color-surface-dark',  value: '#1A1A2E', desc: 'Dark screen background' },
+    { name: '--mb-color-overlay',       value: 'rgba(0,0,0,0.55)', desc: 'Modal / drawer scrim' },
+  ]},
+  { group: 'Text', tokens: [
+    { name: '--mb-color-text',          value: '#2D2D44', desc: 'Primary text' },
+    { name: '--mb-color-text-mid',      value: '#6B7280', desc: 'Secondary text, descriptions' },
+    { name: '--mb-color-text-light',    value: '#9CA3AF', desc: 'Tertiary, placeholders, captions' },
+    { name: '--mb-color-text-inverse',  value: '#FFFFFF', desc: 'Text on dark / colored fills' },
+  ]},
+]
+
+const DT_TYPE: DGroup[] = [
+  { group: 'Family', tokens: [
+    { name: '--mb-font-display',   value: "'Nunito', system-ui, sans-serif", desc: 'All headings and UI labels' },
+    { name: '--mb-font-body',      value: "'Nunito', system-ui, sans-serif", desc: 'Body copy, descriptions' },
+    { name: '--mb-font-mono',      value: "'JetBrains Mono', 'Fira Code', monospace", desc: 'Code, token names, debug' },
+  ]},
+  { group: 'Size', tokens: [
+    { name: '--mb-text-xs',   value: '10px', desc: 'Micro labels, captions' },
+    { name: '--mb-text-sm',   value: '12px', desc: 'Helper text, badges' },
+    { name: '--mb-text-base', value: '13px', desc: 'Body copy' },
+    { name: '--mb-text-md',   value: '14px', desc: 'UI labels, descriptions' },
+    { name: '--mb-text-lg',   value: '16px', desc: 'Subheadings, card titles' },
+    { name: '--mb-text-xl',   value: '18px', desc: 'Section headers' },
+    { name: '--mb-text-2xl',  value: '22px', desc: 'Screen titles' },
+    { name: '--mb-text-3xl',  value: '28px', desc: 'Large display' },
+    { name: '--mb-text-4xl',  value: '36px', desc: 'Hero / score display' },
+    { name: '--mb-text-5xl',  value: '48px', desc: 'XP numbers, big stats' },
+  ]},
+  { group: 'Weight', tokens: [
+    { name: '--mb-weight-regular', value: '700', desc: 'Nunito "regular" — minimum weight used' },
+    { name: '--mb-weight-bold',    value: '800', desc: 'Emphasis, important labels' },
+    { name: '--mb-weight-black',   value: '900', desc: 'Headings, buttons, scores' },
+  ]},
+  { group: 'Line Height', tokens: [
+    { name: '--mb-leading-tight',  value: '1.15', desc: 'Large display text, headings' },
+    { name: '--mb-leading-snug',   value: '1.30', desc: 'Card titles, short labels' },
+    { name: '--mb-leading-normal', value: '1.50', desc: 'Body copy, descriptions' },
+    { name: '--mb-leading-loose',  value: '1.65', desc: 'Long-form text, specs' },
+  ]},
+  { group: 'Letter Spacing', tokens: [
+    { name: '--mb-tracking-tight',  value: '-0.4px', desc: 'Large display numbers' },
+    { name: '--mb-tracking-normal', value: '0px',    desc: 'Default UI text' },
+    { name: '--mb-tracking-wide',   value: '0.06em', desc: 'Small caps, category labels' },
+    { name: '--mb-tracking-wider',  value: '0.10em', desc: 'Allcaps section dividers' },
+  ]},
+]
+
+const DT_SPACING: DToken[] = [
+  { name: '--mb-space-0',   value: '0px',   desc: 'Reset' },
+  { name: '--mb-space-px',  value: '1px',   desc: 'Hairline offset' },
+  { name: '--mb-space-1',   value: '4px',   desc: 'Icon gap, tight inline' },
+  { name: '--mb-space-2',   value: '8px',   desc: 'Compact padding, icon margin' },
+  { name: '--mb-space-3',   value: '12px',  desc: 'Small padding, row gap' },
+  { name: '--mb-space-4',   value: '16px',  desc: 'Base unit — gutter, inner padding' },
+  { name: '--mb-space-5',   value: '20px',  desc: 'Card padding, section gap' },
+  { name: '--mb-space-6',   value: '24px',  desc: 'Section spacing, large gaps' },
+  { name: '--mb-space-8',   value: '32px',  desc: 'Block separation' },
+  { name: '--mb-space-10',  value: '40px',  desc: 'Large section gap' },
+  { name: '--mb-space-12',  value: '48px',  desc: 'Hero/header padding' },
+  { name: '--mb-space-16',  value: '64px',  desc: 'Nav height, page section separation' },
+  { name: '--mb-space-20',  value: '80px',  desc: 'Bottom nav clearance, hero height' },
+]
+
+const DT_RADIUS: DToken[] = [
+  { name: '--mb-radius-xs',   value: '4px',    desc: 'Tags, chips, tight elements' },
+  { name: '--mb-radius-sm',   value: '8px',    desc: 'Badges, small buttons' },
+  { name: '--mb-radius-md',   value: '12px',   desc: 'Inputs, small cards, nav icons' },
+  { name: '--mb-radius-lg',   value: '16px',   desc: 'Standard buttons, list items' },
+  { name: '--mb-radius-xl',   value: '20px',   desc: 'Cards, panels' },
+  { name: '--mb-radius-2xl',  value: '24px',   desc: 'Large cards, sheets' },
+  { name: '--mb-radius-3xl',  value: '32px',   desc: 'Bottom sheets, modals' },
+  { name: '--mb-radius-full', value: '9999px', desc: 'Pills, avatars, coin icons' },
+]
+
+const DT_ELEVATION: DToken[] = [
+  { name: '--mb-z-base',      value: '0',   desc: 'Default document flow' },
+  { name: '--mb-z-raised',    value: '10',  desc: 'Raised cards, floating elements' },
+  { name: '--mb-z-dropdown',  value: '100', desc: 'Dropdowns, popovers' },
+  { name: '--mb-z-sticky',    value: '200', desc: 'Sticky headers, tab bars' },
+  { name: '--mb-z-overlay',   value: '300', desc: 'Drawer overlays, scrim' },
+  { name: '--mb-z-modal',     value: '400', desc: 'Modals, dialogs, sheets' },
+  { name: '--mb-z-toast',     value: '500', desc: 'Toast notifications' },
+  { name: '--mb-z-tooltip',   value: '600', desc: 'Tooltips, hints (always on top)' },
+]
+
+const DT_SHADOW: DGroup[] = [
+  { group: 'Elevation', tokens: [
+    { name: '--mb-shadow-xs',  value: '0 1px 3px rgba(0,0,0,0.10)',         desc: 'Subtle card lift' },
+    { name: '--mb-shadow-sm',  value: '0 2px 6px rgba(0,0,0,0.14)',         desc: 'Standard card depth' },
+    { name: '--mb-shadow-md',  value: '0 4px 14px rgba(0,0,0,0.18)',        desc: 'Elevated cards, modals' },
+    { name: '--mb-shadow-lg',  value: '0 8px 28px rgba(0,0,0,0.22)',        desc: 'Sheets, overlays' },
+    { name: '--mb-shadow-xl',  value: '0 16px 50px rgba(0,0,0,0.28)',       desc: 'Full-screen overlays' },
+  ]},
+  { group: 'Block 3D Ledge', tokens: [
+    { name: '--mb-shadow-block-green',  value: '0 6px 0 0 #1E7A44',  desc: 'Addition block (green)' },
+    { name: '--mb-shadow-block-blue',   value: '0 6px 0 0 #1A5078',  desc: 'Subtraction block (blue)' },
+    { name: '--mb-shadow-block-orange', value: '0 6px 0 0 #A85800',  desc: 'Multiplication block' },
+    { name: '--mb-shadow-block-purple', value: '0 6px 0 0 #4C1D95',  desc: 'Division block' },
+    { name: '--mb-shadow-block-yellow', value: '0 6px 0 0 #9A7200',  desc: 'Number / equals block' },
+  ]},
+  { group: 'Glow', tokens: [
+    { name: '--mb-shadow-glow-brand',   value: '0 0 20px rgba(255,155,92,0.45)',  desc: 'Brand focus ring / hover' },
+    { name: '--mb-shadow-glow-success', value: '0 0 20px rgba(79,211,122,0.45)', desc: 'Correct answer feedback' },
+    { name: '--mb-shadow-glow-warning', value: '0 0 20px rgba(255,213,74,0.45)', desc: 'Star / reward glow' },
+    { name: '--mb-shadow-glow-accent',  value: '0 0 20px rgba(167,139,250,0.45)',desc: 'Magic / premium glow' },
+  ]},
+]
+
+const DT_OPACITY: DToken[] = [
+  { name: '--mb-opacity-full',      value: '1',    desc: 'Active, enabled' },
+  { name: '--mb-opacity-emphasis',  value: '0.88', desc: 'Slightly de-emphasized (overlays)' },
+  { name: '--mb-opacity-secondary', value: '0.70', desc: 'Secondary labels, subtitles' },
+  { name: '--mb-opacity-muted',     value: '0.55', desc: 'Tertiary text, inactive icons' },
+  { name: '--mb-opacity-faint',     value: '0.35', desc: 'Watermarks, decorative' },
+  { name: '--mb-opacity-ghost',     value: '0.12', desc: 'Ghost fills, tinted backgrounds' },
+  { name: '--mb-opacity-disabled',  value: '0.40', desc: 'Disabled interactive elements' },
+]
+
+const DT_BORDER: DGroup[] = [
+  { group: 'Width', tokens: [
+    { name: '--mb-border-thin',   value: '1px',   desc: 'Cards, panels, inputs' },
+    { name: '--mb-border-base',   value: '1.5px', desc: 'Emphasized borders, focus rings' },
+    { name: '--mb-border-thick',  value: '2px',   desc: 'Active state, selected' },
+    { name: '--mb-border-heavy',  value: '3px',   desc: 'Progress fills, key dividers' },
+  ]},
+  { group: 'Color (Light UI)', tokens: [
+    { name: '--mb-border-subtle',   value: 'rgba(0,0,0,0.06)',  desc: 'Lightest divider on white' },
+    { name: '--mb-border-default',  value: 'rgba(0,0,0,0.10)',  desc: 'Standard card border' },
+    { name: '--mb-border-emphasis', value: 'rgba(0,0,0,0.18)',  desc: 'Emphasized / focus' },
+  ]},
+  { group: 'Color (Dark UI)', tokens: [
+    { name: '--mb-border-dark-subtle',   value: 'rgba(255,255,255,0.06)', desc: 'Subtle on dark surfaces' },
+    { name: '--mb-border-dark-default',  value: 'rgba(255,255,255,0.10)', desc: 'Standard on dark' },
+    { name: '--mb-border-dark-emphasis', value: 'rgba(255,255,255,0.20)', desc: 'Emphasized on dark' },
+  ]},
+]
+
+const DT_GRID: DToken[] = [
+  { name: '--mb-grid-columns',   value: '4',    desc: 'Mobile base grid (375–430px)' },
+  { name: '--mb-grid-gutter',    value: '12px', desc: 'Column gap' },
+  { name: '--mb-grid-margin',    value: '16px', desc: 'Page edge margin' },
+  { name: '--mb-grid-max-w',     value: '430px',desc: 'App canvas max-width (mobile-first)' },
+  { name: '--mb-grid-content-w', value: '398px',desc: 'Content width (max-w − 2×margin)' },
+]
+
+const DT_BREAKS: DToken[] = [
+  { name: '--mb-bp-xs',      value: '320px', desc: 'Small phones (SE, legacy)' },
+  { name: '--mb-bp-sm',      value: '375px', desc: 'Standard mobile baseline' },
+  { name: '--mb-bp-md',      value: '430px', desc: 'Large phones — MathBlocks canvas width' },
+  { name: '--mb-bp-lg',      value: '768px', desc: 'Tablet portrait' },
+  { name: '--mb-bp-xl',      value: '1024px',desc: 'Tablet landscape / small laptop' },
+  { name: '--mb-bp-2xl',     value: '1280px',desc: 'Desktop' },
+]
+
+const DT_ICON: DToken[] = [
+  { name: '--mb-icon-2xs',  value: '10px', desc: 'Micro indicators' },
+  { name: '--mb-icon-xs',   value: '12px', desc: 'Dense list icons' },
+  { name: '--mb-icon-sm',   value: '16px', desc: 'Inline icons in buttons' },
+  { name: '--mb-icon-md',   value: '20px', desc: 'Standard UI icons' },
+  { name: '--mb-icon-lg',   value: '24px', desc: 'Navigation icons' },
+  { name: '--mb-icon-xl',   value: '32px', desc: 'Feature / section icons' },
+  { name: '--mb-icon-2xl',  value: '40px', desc: 'Avatar icons, large CTAs' },
+  { name: '--mb-icon-3xl',  value: '48px', desc: 'Hero illustrations (inlined)' },
+]
+
+const DT_BUTTONS: DGroup[] = [
+  { group: 'Height', tokens: [
+    { name: '--mb-btn-h-sm',   value: '36px', desc: 'Compact / secondary actions' },
+    { name: '--mb-btn-h-md',   value: '48px', desc: 'Default — most buttons' },
+    { name: '--mb-btn-h-lg',   value: '56px', desc: 'Primary CTA, full-width actions' },
+    { name: '--mb-btn-h-xl',   value: '64px', desc: 'Hero CTA (adventure map, result)' },
+  ]},
+  { group: 'Padding (horizontal)', tokens: [
+    { name: '--mb-btn-px-sm',  value: '14px', desc: 'Compact button' },
+    { name: '--mb-btn-px-md',  value: '20px', desc: 'Default button' },
+    { name: '--mb-btn-px-lg',  value: '28px', desc: 'Large CTA' },
+  ]},
+  { group: 'Font Size', tokens: [
+    { name: '--mb-btn-text-sm', value: '13px', desc: 'Compact label' },
+    { name: '--mb-btn-text-md', value: '15px', desc: 'Default label' },
+    { name: '--mb-btn-text-lg', value: '17px', desc: 'Large CTA label' },
+  ]},
+  { group: 'Ledge (3D depth)', tokens: [
+    { name: '--mb-btn-ledge-sm', value: '3px', desc: 'Compact 3D depth' },
+    { name: '--mb-btn-ledge-md', value: '5px', desc: 'Default 3D depth' },
+    { name: '--mb-btn-ledge-lg', value: '6px', desc: 'Large CTA depth' },
+  ]},
+]
+
+const DT_CARDS: DGroup[] = [
+  { group: 'Padding', tokens: [
+    { name: '--mb-card-p-sm',  value: '12px', desc: 'Dense cards, list rows' },
+    { name: '--mb-card-p-md',  value: '16px', desc: 'Standard card padding' },
+    { name: '--mb-card-p-lg',  value: '20px', desc: 'Feature cards, wide content' },
+    { name: '--mb-card-p-xl',  value: '28px', desc: 'Hero / result cards' },
+  ]},
+  { group: 'Corner Radius', tokens: [
+    { name: '--mb-card-radius-sm', value: '16px', desc: 'Inline / list cards' },
+    { name: '--mb-card-radius-md', value: '20px', desc: 'Standard card' },
+    { name: '--mb-card-radius-lg', value: '24px', desc: 'Feature / expanded card' },
+    { name: '--mb-card-radius-xl', value: '32px', desc: 'Sheet / bottom drawer' },
+  ]},
+  { group: 'Min Height', tokens: [
+    { name: '--mb-card-h-sm',  value: '64px',  desc: 'List item row' },
+    { name: '--mb-card-h-md',  value: '96px',  desc: 'Compact feature card' },
+    { name: '--mb-card-h-lg',  value: '140px', desc: 'Standard feature card' },
+    { name: '--mb-card-h-xl',  value: '200px', desc: 'Hero / splash card' },
+  ]},
+]
+
+const DT_DURATION: DToken[] = [
+  { name: '--mb-duration-instant',  value: '80ms',   desc: 'Micro-interactions, ripple start' },
+  { name: '--mb-duration-fast',     value: '150ms',  desc: 'Button press, tap feedback' },
+  { name: '--mb-duration-normal',   value: '280ms',  desc: 'Standard UI transitions' },
+  { name: '--mb-duration-enter',    value: '340ms',  desc: 'Screen enter, modal open' },
+  { name: '--mb-duration-exit',     value: '200ms',  desc: 'Screen exit, modal close' },
+  { name: '--mb-duration-slow',     value: '420ms',  desc: 'Reward reveals, star award' },
+  { name: '--mb-duration-slower',   value: '600ms',  desc: 'XP bar fill, page hero entrance' },
+  { name: '--mb-duration-ambient',  value: '2000ms', desc: 'Loops: float, blink, pulse' },
+  { name: '--mb-duration-ambient-slow', value: '3500ms', desc: 'Slow loops: cloud drift' },
+]
+
+const DT_EASING: (DToken & { pts: [number,number,number,number] })[] = [
+  { name: '--mb-ease-spring',       value: 'cubic-bezier(0.34, 1.56, 0.64, 1)',  pts: [0.34,1.56,0.64,1],   desc: 'Overshoot — primary interactive spring' },
+  { name: '--mb-ease-spring-soft',  value: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', pts: [0.25,0.46,0.45,0.94], desc: 'Gentle spring — panels, cards' },
+  { name: '--mb-ease-out',          value: 'cubic-bezier(0.0, 0.0, 0.2, 1)',     pts: [0.0,0.0,0.2,1],      desc: 'Standard decelerate — enters' },
+  { name: '--mb-ease-in-out',       value: 'cubic-bezier(0.4, 0.0, 0.2, 1)',     pts: [0.4,0.0,0.2,1],      desc: 'Standard — transitions in place' },
+  { name: '--mb-ease-in',           value: 'cubic-bezier(0.4, 0.0, 1, 1)',       pts: [0.4,0.0,1,1],        desc: 'Accelerate — exits, dismiss' },
+  { name: '--mb-ease-bounce',       value: 'cubic-bezier(0.34, 1.56, 0.64, 1)',  pts: [0.34,1.56,0.64,1],   desc: 'Alias of spring — number blocks' },
+  { name: '--mb-ease-linear',       value: 'linear',                             pts: [0,0,1,1],            desc: 'Constant — spinning, shimmer, progress' },
+]
+
+const DT_NAMING_RULES = [
+  { pattern: '--mb-{category}',                    ex: '--mb-color-brand',          desc: 'All tokens prefixed --mb- to avoid collisions' },
+  { pattern: '--mb-{category}-{role}',             ex: '--mb-color-text',           desc: 'Category + semantic role' },
+  { pattern: '--mb-{category}-{role}-{variant}',   ex: '--mb-color-text-mid',       desc: 'Category + role + intensity/state variant' },
+  { pattern: '--mb-{category}-{scale}',            ex: '--mb-space-4',              desc: 'Numeric scale tokens (spacing, type size)' },
+  { pattern: '--mb-{component}-{property}-{size}', ex: '--mb-btn-h-md',             desc: 'Component-scoped tokens with size qualifier' },
+  { pattern: 'Modifier order',                     ex: '-sm / -md / -lg / -xl',     desc: 'Always size-ascending: sm → md → lg → xl → 2xl' },
+  { pattern: 'State suffix',                       ex: '-hover / -active / -focus / -disabled', desc: 'Append state after all other qualifiers' },
+  { pattern: 'Dark suffix',                        ex: '--mb-color-brand-dark',     desc: 'Darker tone for 3D ledge, shadow, pressed state' },
+]
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function DTColorSwatch({ hex, size = 32 }: { hex: string; size?: number }) {
+  const isGradient = hex.startsWith('rgba') || hex.startsWith('linear')
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: 8, flexShrink: 0,
+      background: hex, border: '1px solid rgba(255,255,255,0.12)',
+      boxShadow: isGradient ? 'none' : `0 0 0 1px rgba(0,0,0,0.08)`,
+    }}/>
+  )
+}
+
+function DTEasingCurve({ pts, color = '#22D3EE', size = 44 }: { pts: [number,number,number,number]; color?: string; size?: number }) {
+  const p = (x: number, y: number) => [x * size, (1 - y) * size]
+  const [x1,y1] = p(pts[0], pts[1])
+  const [x2,y2] = p(pts[2], pts[3])
+  const [sx,sy] = p(0, 0)
+  const [ex,ey] = p(1, 1)
+  const path = `M${sx},${sy} C${x1},${y1} ${x2},${y2} ${ex},${ey}`
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none" style={{ flexShrink: 0 }}>
+      <line x1={sx} y1={sy} x2={x1} y2={y1} stroke={`${color}44`} strokeWidth="1"/>
+      <line x1={ex} y1={ey} x2={x2} y2={y2} stroke={`${color}44`} strokeWidth="1"/>
+      <path d={path} stroke={color} strokeWidth="2" strokeLinecap="round"/>
+      <circle cx={x1} cy={y1} r="2.5" fill={color} opacity="0.6"/>
+      <circle cx={x2} cy={y2} r="2.5" fill={color} opacity="0.6"/>
+    </svg>
+  )
+}
+
+function DTRow({ token, onCopy, copied }: { token: DToken; onCopy: (t: DToken) => void; copied: boolean }) {
+  const isColor = /^#|^rgb/.test(token.value)
+  const isSize = /^\d+px$/.test(token.value)
+  return (
+    <div
+      onClick={() => onCopy(token)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px',
+        borderRadius: 10, cursor: 'pointer',
+        background: copied ? 'rgba(34,211,238,0.1)' : 'rgba(255,255,255,0.02)',
+        border: copied ? '1px solid rgba(34,211,238,0.3)' : '1px solid rgba(255,255,255,0.04)',
+        transition: 'all 0.15s ease',
+      }}
+    >
+      {/* Visual preview */}
+      {isColor && <DTColorSwatch hex={token.value} size={28}/>}
+      {isSize && (
+        <div style={{ width: 40, height: 20, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          <div style={{ height: 6, borderRadius: 3, background: '#22D3EE', width: Math.min(parseInt(token.value) / 2, 40) }}/>
+        </div>
+      )}
+      {!isColor && !isSize && (
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: 8, height: 8, borderRadius: 2, background: '#22D3EE', opacity: 0.6 }}/>
+        </div>
+      )}
+      {/* Token name */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <code style={{ fontFamily: 'monospace', fontSize: 10.5, color: '#22D3EE', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {token.name}
+        </code>
+        {token.desc && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10, color: 'rgba(148,163,184,0.65)', marginTop: 1 }}>{token.desc}</div>}
+      </div>
+      {/* Value */}
+      <code style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(148,163,184,0.8)', flexShrink: 0, maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right' }}>
+        {token.value}
+      </code>
+      {/* Copy indicator */}
+      <div style={{ width: 20, height: 20, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: copied ? 1 : 0.4 }}>
+        {copied
+          ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          : <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="7" height="8" rx="1.5" stroke="rgba(148,163,184,0.6)" strokeWidth="1.2"/><rect x="4" y="1" width="7" height="8" rx="1.5" stroke="rgba(148,163,184,0.6)" strokeWidth="1.2" fill="none"/></svg>
+        }
+      </div>
+    </div>
+  )
+}
+
+function DTGroupBlock({ group, tokens, onCopy, copiedKey }: { group: string; tokens: DToken[]; onCopy: (t: DToken) => void; copiedKey: string | null }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 10.5, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6, paddingLeft: 2 }}>
+        {group}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {tokens.map(t => (
+          <DTRow key={t.name} token={t} onCopy={onCopy} copied={copiedKey === t.name}/>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Build the full CSS :root block for "copy all tokens"
+function buildAllTokensCSS(): string {
+  const flat: DToken[] = [
+    ...DT_COLORS.flatMap(g => g.tokens),
+    ...DT_TYPE.flatMap(g => g.tokens),
+    ...DT_SPACING,
+    ...DT_RADIUS,
+    ...DT_ELEVATION,
+    ...DT_SHADOW.flatMap(g => g.tokens),
+    ...DT_OPACITY,
+    ...DT_BORDER.flatMap(g => g.tokens),
+    ...DT_GRID,
+    ...DT_BREAKS,
+    ...DT_ICON,
+    ...DT_BUTTONS.flatMap(g => g.tokens),
+    ...DT_CARDS.flatMap(g => g.tokens),
+    ...DT_DURATION,
+    ...DT_EASING,
+  ]
+  const lines = flat.map(t => `  ${t.name}: ${t.value};`)
+  return `/* MathBlocks Design Tokens v1.0 */\n:root {\n${lines.join('\n')}\n}`
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
+
+function DesignTokenPage({ onBack }: { onBack: () => void }) {
+  const [activeTab, setActiveTab] = React.useState<TokenTab>('colors')
+  const [copiedKey, setCopiedKey] = React.useState<string | null>(null)
+  const [allCopied, setAllCopied] = React.useState(false)
+
+  const copyToken = (t: DToken) => {
+    const text = `${t.name}: ${t.value};`
+    navigator.clipboard?.writeText(text).catch(() => {})
+    setCopiedKey(t.name)
+    setTimeout(() => setCopiedKey(null), 1800)
+  }
+
+  const copyAll = () => {
+    navigator.clipboard?.writeText(buildAllTokensCSS()).catch(() => {})
+    setAllCopied(true)
+    setTimeout(() => setAllCopied(false), 2200)
+  }
+
+  const TABS: { id: TokenTab; label: string }[] = [
+    { id: 'colors',      label: '🎨 Colors' },
+    { id: 'type',        label: 'Aa Type' },
+    { id: 'spacing',     label: '↕ Space' },
+    { id: 'radius',      label: '⌒ Radius' },
+    { id: 'elevation',   label: '🔲 Z-Index' },
+    { id: 'shadow',      label: '🌑 Shadow' },
+    { id: 'opacity',     label: '◌ Opacity' },
+    { id: 'border',      label: '▭ Border' },
+    { id: 'grid',        label: '⊞ Grid' },
+    { id: 'breakpoints', label: '📱 Breaks' },
+    { id: 'icons',       label: '🔷 Icons' },
+    { id: 'buttons',     label: '⬜ Buttons' },
+    { id: 'cards',       label: '🃏 Cards' },
+    { id: 'duration',    label: '⏱ Time' },
+    { id: 'easing',      label: '↗ Easing' },
+    { id: 'naming',      label: '📝 Naming' },
+  ]
+
+  const panelBg = 'rgba(255,255,255,0.025)'
+  const panelBorder = '1px solid rgba(34,211,238,0.08)'
+
+  const SectionHead = ({ title, sub, count }: { title: string; sub?: string; count?: number }) => (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 19, color: '#E2E8F0', letterSpacing: '-0.3px' }}>{title}</div>
+        {count !== undefined && (
+          <div style={{ fontFamily: 'monospace', fontSize: 10, color: '#22D3EE', background: 'rgba(34,211,238,0.12)', borderRadius: 999, padding: '2px 7px', border: '1px solid rgba(34,211,238,0.2)' }}>
+            {count} tokens
+          </div>
+        )}
+      </div>
+      {sub && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: 'rgba(100,116,139,0.9)', marginTop: 3 }}>{sub}</div>}
+    </div>
+  )
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#060D1A', display: 'flex', flexDirection: 'column' }}>
+
+      {/* Header */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: 'rgba(6,13,26,0.94)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(34,211,238,0.1)',
+        padding: '14px 16px 12px',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}>
+        <button
+          onClick={onBack}
+          style={{
+            width: 38, height: 38, borderRadius: 12, flexShrink: 0,
+            background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.22)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 3L5 8L10 13" stroke="rgba(34,211,238,0.9)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 17, color: '#E2E8F0', letterSpacing: '-0.3px' }}>Design Tokens</div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(34,211,238,0.55)', marginTop: 1 }}>--mb-* · CSS Variables · Cursor-ready</div>
+        </div>
+        <button
+          onClick={copyAll}
+          style={{
+            height: 34, padding: '0 12px', borderRadius: 10,
+            background: allCopied ? 'rgba(34,211,238,0.22)' : 'rgba(34,211,238,0.12)',
+            border: allCopied ? '1px solid rgba(34,211,238,0.5)' : '1px solid rgba(34,211,238,0.22)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+            transition: 'all 0.15s ease',
+          }}
+        >
+          {allCopied
+            ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            : <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="3" width="8" height="9" rx="2" stroke="rgba(34,211,238,0.8)" strokeWidth="1.3"/><rect x="4" y="1" width="8" height="9" rx="2" stroke="rgba(34,211,238,0.8)" strokeWidth="1.3" fill="none"/></svg>
+          }
+          <span style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11.5, color: '#22D3EE', whiteSpace: 'nowrap' }}>
+            {allCopied ? 'Copied!' : 'Copy :root'}
+          </span>
+        </button>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{
+        position: 'sticky', top: 64, zIndex: 40,
+        background: 'rgba(6,13,26,0.9)', backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(34,211,238,0.07)',
+        padding: '8px 14px',
+        display: 'flex', gap: 5, overflowX: 'auto',
+      }}>
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            style={{
+              padding: '5px 11px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap',
+              border: activeTab === t.id ? '1px solid rgba(34,211,238,0.4)' : '1px solid transparent',
+              background: activeTab === t.id ? 'rgba(34,211,238,0.14)' : 'rgba(255,255,255,0.04)',
+              fontFamily: 'Nunito', fontWeight: 900, fontSize: 11.5,
+              color: activeTab === t.id ? '#22D3EE' : 'rgba(148,163,184,0.55)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '22px 14px 80px' }}>
+
+        {/* ── Colors ── */}
+        {activeTab === 'colors' && (
+          <div>
+            <SectionHead title="Color Tokens" sub="Semantic palette · 4px-grid aware · Dark-mode variants included" count={DT_COLORS.reduce((a,g) => a + g.tokens.length, 0)}/>
+            {/* Palette preview strip */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
+              {['#FF9B5C','#4FD37A','#6BCBFF','#FFD54A','#FF7B7B','#A78BFA','#FFB347'].map(c => (
+                <div key={c} title={c} style={{ flex: '1 0 28px', height: 28, borderRadius: 8, background: c, minWidth: 28, maxWidth: 48 }}/>
+              ))}
+            </div>
+            {DT_COLORS.map(g => (
+              <DTGroupBlock key={g.group} group={g.group} tokens={g.tokens} onCopy={copyToken} copiedKey={copiedKey}/>
+            ))}
+          </div>
+        )}
+
+        {/* ── Typography ── */}
+        {activeTab === 'type' && (
+          <div>
+            <SectionHead title="Typography Tokens" sub="Nunito display · 4-weight system · Fluid scale" count={DT_TYPE.reduce((a,g) => a + g.tokens.length, 0)}/>
+            {/* Live type scale */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '16px 14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>Live Scale Preview</div>
+              {[
+                { size: 48, label: '5xl · 48px · Score' },
+                { size: 36, label: '4xl · 36px · Hero' },
+                { size: 28, label: '3xl · 28px · Display' },
+                { size: 22, label: '2xl · 22px · Title' },
+                { size: 18, label: 'xl · 18px · Section' },
+                { size: 16, label: 'lg · 16px · Subhead' },
+                { size: 14, label: 'md · 14px · Body' },
+                { size: 13, label: 'base · 13px · UI' },
+                { size: 12, label: 'sm · 12px · Helper' },
+                { size: 10, label: 'xs · 10px · Micro' },
+              ].map(({ size, label }) => (
+                <div key={size} style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 4 }}>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: size, color: '#E2E8F0', lineHeight: 1.1, flexShrink: 0 }}>Aa</div>
+                  <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(100,116,139,0.8)' }}>{label}</div>
+                </div>
+              ))}
+            </div>
+            {DT_TYPE.map(g => (
+              <DTGroupBlock key={g.group} group={g.group} tokens={g.tokens} onCopy={copyToken} copiedKey={copiedKey}/>
+            ))}
+          </div>
+        )}
+
+        {/* ── Spacing ── */}
+        {activeTab === 'spacing' && (
+          <div>
+            <SectionHead title="Spacing Tokens" sub="4px base grid · Multiples of 4 · --mb-space-{n}" count={DT_SPACING.length}/>
+            {/* Visual ruler */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '16px 14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Scale Ruler</div>
+              {DT_SPACING.filter(t => t.value !== '0px' && t.value !== '1px').map(t => {
+                const px = parseInt(t.value)
+                const barW = Math.min(px * 2.5, 280)
+                return (
+                  <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
+                    <div style={{ width: barW, height: 8, borderRadius: 4, background: 'linear-gradient(90deg, #22D3EE, #818CF8)', transition: 'width 0.2s ease', flexShrink: 0 }}/>
+                    <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(148,163,184,0.65)', whiteSpace: 'nowrap' }}>{t.value}</div>
+                  </div>
+                )
+              })}
+            </div>
+            <DTGroupBlock group="All Spacing Tokens" tokens={DT_SPACING} onCopy={copyToken} copiedKey={copiedKey}/>
+          </div>
+        )}
+
+        {/* ── Radius ── */}
+        {activeTab === 'radius' && (
+          <div>
+            <SectionHead title="Border Radius Tokens" sub="Rounded-first design · xs → full" count={DT_RADIUS.length}/>
+            {/* Visual preview grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+              {DT_RADIUS.map(t => {
+                const r = t.value
+                return (
+                  <div key={t.name} style={{ background: panelBg, border: panelBorder, borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 40, height: 40, background: 'rgba(34,211,238,0.18)', border: '2px solid rgba(34,211,238,0.4)', borderRadius: r === '9999px' ? 9999 : parseInt(r), flexShrink: 0 }}/>
+                    <div>
+                      <code style={{ fontFamily: 'monospace', fontSize: 9.5, color: '#22D3EE', display: 'block' }}>{t.name.replace('--mb-radius-','')}</code>
+                      <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: '#E2E8F0' }}>{t.value}</div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <DTGroupBlock group="All Radius Tokens" tokens={DT_RADIUS} onCopy={copyToken} copiedKey={copiedKey}/>
+          </div>
+        )}
+
+        {/* ── Elevation ── */}
+        {activeTab === 'elevation' && (
+          <div>
+            <SectionHead title="Elevation (Z-Index)" sub="8-tier z-index system · Predictable stacking" count={DT_ELEVATION.length}/>
+            {/* Stack diagram */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '18px 14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>Stacking Order</div>
+              <div style={{ position: 'relative', height: DT_ELEVATION.length * 36 }}>
+                {DT_ELEVATION.slice().reverse().map((t, i) => (
+                  <div key={t.name} style={{
+                    position: 'absolute', bottom: i * 30, left: i * 10, right: 0,
+                    height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', paddingLeft: 12, gap: 8,
+                    background: `rgba(34,211,238,${0.06 + i * 0.04})`,
+                    border: `1px solid rgba(34,211,238,${0.12 + i * 0.04})`,
+                  }}>
+                    <code style={{ fontFamily: 'monospace', fontSize: 10, color: '#22D3EE' }}>{t.value}</code>
+                    <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(148,163,184,0.8)' }}>{t.name.replace('--mb-z-','')}</span>
+                    <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10, color: 'rgba(100,116,139,0.7)', marginLeft: 'auto', marginRight: 10 }}>{t.desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <DTGroupBlock group="All Z-Index Tokens" tokens={DT_ELEVATION} onCopy={copyToken} copiedKey={copiedKey}/>
+          </div>
+        )}
+
+        {/* ── Shadow ── */}
+        {activeTab === 'shadow' && (
+          <div>
+            <SectionHead title="Shadow Tokens" sub="Elevation shadows · Block 3D ledge · Glow effects" count={DT_SHADOW.reduce((a,g) => a + g.tokens.length, 0)}/>
+            {/* Shadow preview */}
+            <div style={{ display: 'flex', gap: 10, marginBottom: 20, overflowX: 'auto' }}>
+              {DT_SHADOW[0].tokens.map(t => (
+                <div key={t.name} style={{
+                  width: 64, height: 64, borderRadius: 14, flexShrink: 0,
+                  background: '#E2E8F0',
+                  boxShadow: t.value,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 9, color: '#6B7280', textAlign: 'center' }}>{t.name.replace('--mb-shadow-','')}</div>
+                </div>
+              ))}
+            </div>
+            {DT_SHADOW.map(g => (
+              <DTGroupBlock key={g.group} group={g.group} tokens={g.tokens} onCopy={copyToken} copiedKey={copiedKey}/>
+            ))}
+          </div>
+        )}
+
+        {/* ── Opacity ── */}
+        {activeTab === 'opacity' && (
+          <div>
+            <SectionHead title="Opacity Tokens" sub="7-step scale · Disabled, muted, ghost levels" count={DT_OPACITY.length}/>
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Opacity Scale</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {DT_OPACITY.map(t => (
+                  <div key={t.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10,
+                      background: '#22D3EE', opacity: parseFloat(t.value),
+                      border: '1px solid rgba(255,255,255,0.2)',
+                    }}/>
+                    <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(148,163,184,0.65)' }}>{t.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <DTGroupBlock group="All Opacity Tokens" tokens={DT_OPACITY} onCopy={copyToken} copiedKey={copiedKey}/>
+          </div>
+        )}
+
+        {/* ── Border ── */}
+        {activeTab === 'border' && (
+          <div>
+            <SectionHead title="Border Tokens" sub="Width scale · Light and dark mode color sets" count={DT_BORDER.reduce((a,g) => a + g.tokens.length, 0)}/>
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Width Samples</div>
+              {DT_BORDER[0].tokens.map(t => (
+                <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                  <div style={{ width: 120, height: parseInt(t.value), background: '#22D3EE', borderRadius: 1, flexShrink: 0 }}/>
+                  <code style={{ fontFamily: 'monospace', fontSize: 10, color: '#22D3EE' }}>{t.value}</code>
+                  <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(100,116,139,0.8)' }}>{t.desc}</span>
+                </div>
+              ))}
+            </div>
+            {DT_BORDER.map(g => (
+              <DTGroupBlock key={g.group} group={g.group} tokens={g.tokens} onCopy={copyToken} copiedKey={copiedKey}/>
+            ))}
+          </div>
+        )}
+
+        {/* ── Grid ── */}
+        {activeTab === 'grid' && (
+          <div>
+            <SectionHead title="Grid Tokens" sub="4-column mobile grid · 430px canvas · 16px margins" count={DT_GRID.length}/>
+            {/* Grid diagram */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '16px 14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>Column Diagram</div>
+              <div style={{ position: 'relative', height: 80 }}>
+                {/* Margin indicators */}
+                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 16, background: 'rgba(255,155,92,0.12)', border: '1px dashed rgba(255,155,92,0.3)', borderRadius: 3 }}/>
+                <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 16, background: 'rgba(255,155,92,0.12)', border: '1px dashed rgba(255,155,92,0.3)', borderRadius: 3 }}/>
+                {/* Column grid */}
+                <div style={{ position: 'absolute', left: 18, right: 18, top: 0, bottom: 0, display: 'flex', gap: 12 }}>
+                  {[0,1,2,3].map(i => (
+                    <div key={i} style={{ flex: 1, background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(34,211,238,0.6)' }}>{i+1}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(255,155,92,0.65)' }}>←16px→</div>
+                <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(34,211,238,0.65)' }}>gutter: 12px × 3</div>
+                <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(255,155,92,0.65)' }}>←16px→</div>
+              </div>
+            </div>
+            <DTGroupBlock group="All Grid Tokens" tokens={DT_GRID} onCopy={copyToken} copiedKey={copiedKey}/>
+          </div>
+        )}
+
+        {/* ── Breakpoints ── */}
+        {activeTab === 'breakpoints' && (
+          <div>
+            <SectionHead title="Breakpoint Tokens" sub="Mobile-first · MathBlocks canvas: 430px" count={DT_BREAKS.length}/>
+            {/* Responsive bar */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '16px 14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>Width Scale</div>
+              {DT_BREAKS.map(t => {
+                const w = parseInt(t.value)
+                const barW = Math.min(w / 5, 260)
+                return (
+                  <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <div style={{ width: barW, height: 20, borderRadius: 5, background: 'rgba(34,211,238,0.12)', border: '1px solid rgba(34,211,238,0.25)', display: 'flex', alignItems: 'center', paddingLeft: 6, flexShrink: 0 }}>
+                      {w <= 430 && <div style={{ width: 8, height: 12, borderRadius: 2, background: '#22D3EE', opacity: 0.7 }}/>}
+                    </div>
+                    <div>
+                      <code style={{ fontFamily: 'monospace', fontSize: 10, color: '#22D3EE' }}>{t.value}</code>
+                      <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10, color: 'rgba(100,116,139,0.75)', marginLeft: 8 }}>{t.desc}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <DTGroupBlock group="All Breakpoint Tokens" tokens={DT_BREAKS} onCopy={copyToken} copiedKey={copiedKey}/>
+            <div style={{ background: 'rgba(34,211,238,0.06)', borderRadius: 12, border: '1px solid rgba(34,211,238,0.15)', padding: '12px 14px', marginTop: 12 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: '#22D3EE', marginBottom: 6 }}>Usage in CSS</div>
+              <pre style={{ fontFamily: 'monospace', fontSize: 10.5, color: 'rgba(148,163,184,0.85)', margin: 0, lineHeight: 1.7, overflow: 'auto' }}>
+{`@media (min-width: var(--mb-bp-lg)) {
+  /* Tablet+ layout adjustments */
+}
+
+@media (max-width: var(--mb-bp-md)) {
+  /* MathBlocks primary target */
+}`}
+              </pre>
+            </div>
+          </div>
+        )}
+
+        {/* ── Icon Size ── */}
+        {activeTab === 'icons' && (
+          <div>
+            <SectionHead title="Icon Size Tokens" sub="8-tier scale · 2xs → 3xl" count={DT_ICON.length}/>
+            <div style={{ display: 'flex', gap: 14, marginBottom: 20, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              {DT_ICON.map(t => {
+                const s = parseInt(t.value)
+                return (
+                  <div key={t.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                    <div style={{
+                      width: s, height: s, borderRadius: Math.max(s * 0.22, 3),
+                      background: 'rgba(34,211,238,0.18)', border: '1.5px solid rgba(34,211,238,0.4)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      <div style={{ width: s * 0.5, height: s * 0.5, borderRadius: '50%', background: '#22D3EE', opacity: 0.7 }}/>
+                    </div>
+                    <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(34,211,238,0.55)', textAlign: 'center' }}>{t.value}</div>
+                    <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 9, color: 'rgba(100,116,139,0.65)', textAlign: 'center' }}>{t.name.replace('--mb-icon-','')}</div>
+                  </div>
+                )
+              })}
+            </div>
+            <DTGroupBlock group="All Icon Size Tokens" tokens={DT_ICON} onCopy={copyToken} copiedKey={copiedKey}/>
+          </div>
+        )}
+
+        {/* ── Buttons ── */}
+        {activeTab === 'buttons' && (
+          <div>
+            <SectionHead title="Button Size Tokens" sub="Height · Padding · Font size · 3D ledge depth" count={DT_BUTTONS.reduce((a,g) => a + g.tokens.length, 0)}/>
+            {/* Height preview */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '16px 14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>Height & 3D Ledge Comparison</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start' }}>
+                {[
+                  { h: 36, label: 'sm · 36px', ledge: 3, color: '#4FD37A', darkColor: '#1E7A44' },
+                  { h: 48, label: 'md · 48px (default)', ledge: 5, color: '#6BCBFF', darkColor: '#1A5078' },
+                  { h: 56, label: 'lg · 56px', ledge: 6, color: '#FFD54A', darkColor: '#9A7200' },
+                  { h: 64, label: 'xl · 64px', ledge: 6, color: '#A78BFA', darkColor: '#4C1D95' },
+                ].map(({ h, label, ledge, color, darkColor }) => (
+                  <div key={h} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{
+                      height: h, width: 140, borderRadius: 14,
+                      background: color,
+                      boxShadow: `0 ${ledge}px 0 0 ${darkColor}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <span style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 13, color: 'rgba(0,0,0,0.55)' }}>Button</span>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: '#E2E8F0' }}>{label}</div>
+                      <div style={{ fontFamily: 'monospace', fontSize: 9.5, color: 'rgba(100,116,139,0.7)' }}>ledge: {ledge}px</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {DT_BUTTONS.map(g => (
+              <DTGroupBlock key={g.group} group={g.group} tokens={g.tokens} onCopy={copyToken} copiedKey={copiedKey}/>
+            ))}
+          </div>
+        )}
+
+        {/* ── Cards ── */}
+        {activeTab === 'cards' && (
+          <div>
+            <SectionHead title="Card Size Tokens" sub="Padding · Radius · Min height · All card variants" count={DT_CARDS.reduce((a,g) => a + g.tokens.length, 0)}/>
+            {/* Card padding preview */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Padding Comparison</div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {[
+                  { p: 12, label: 'sm', r: 16 }, { p: 16, label: 'md', r: 20 },
+                  { p: 20, label: 'lg', r: 24 }, { p: 28, label: 'xl', r: 32 },
+                ].map(({ p, label, r }) => (
+                  <div key={p} style={{
+                    flex: 1, minWidth: 60, background: 'rgba(34,211,238,0.06)',
+                    border: '1.5px dashed rgba(34,211,238,0.25)', borderRadius: r,
+                    padding: p,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 56,
+                  }}>
+                    <div style={{ background: 'rgba(34,211,238,0.25)', borderRadius: 4, padding: '2px 6px' }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: 9, color: '#22D3EE' }}>{label} · {p}px</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {DT_CARDS.map(g => (
+              <DTGroupBlock key={g.group} group={g.group} tokens={g.tokens} onCopy={copyToken} copiedKey={copiedKey}/>
+            ))}
+          </div>
+        )}
+
+        {/* ── Duration ── */}
+        {activeTab === 'duration' && (
+          <div>
+            <SectionHead title="Animation Duration Tokens" sub="9-step timing scale · 80ms → 3500ms" count={DT_DURATION.length}/>
+            {/* Timing bars */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '16px 14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>Timing Scale</div>
+              {DT_DURATION.map(t => {
+                const ms = parseInt(t.value)
+                const barW = Math.min(ms / 14, 260)
+                const isAmbient = ms >= 2000
+                return (
+                  <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <div style={{
+                      width: barW, height: 8, borderRadius: 4, flexShrink: 0,
+                      background: isAmbient
+                        ? 'linear-gradient(90deg, #818CF8, #A78BFA)'
+                        : 'linear-gradient(90deg, #22D3EE, #38BDF8)',
+                    }}/>
+                    <code style={{ fontFamily: 'monospace', fontSize: 10, color: isAmbient ? '#818CF8' : '#22D3EE', width: 52, flexShrink: 0 }}>{t.value}</code>
+                    <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10.5, color: 'rgba(100,116,139,0.75)' }}>{t.desc}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <DTGroupBlock group="All Duration Tokens" tokens={DT_DURATION} onCopy={copyToken} copiedKey={copiedKey}/>
+          </div>
+        )}
+
+        {/* ── Easing ── */}
+        {activeTab === 'easing' && (
+          <div>
+            <SectionHead title="Easing Tokens" sub="7 named curves · Bezier visualization · CSS ready" count={DT_EASING.length}/>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 8 }}>
+              {DT_EASING.map(t => (
+                <div
+                  key={t.name}
+                  onClick={() => copyToken(t)}
+                  style={{
+                    background: copiedKey === t.name ? 'rgba(34,211,238,0.1)' : panelBg,
+                    border: copiedKey === t.name ? '1px solid rgba(34,211,238,0.3)' : panelBorder,
+                    borderRadius: 14, padding: '12px 14px', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <DTEasingCurve pts={t.pts} size={44}/>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <code style={{ fontFamily: 'monospace', fontSize: 10.5, color: '#22D3EE', display: 'block', marginBottom: 3 }}>{t.name}</code>
+                    <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10.5, color: 'rgba(148,163,184,0.8)', marginBottom: 5 }}>{t.desc}</div>
+                    <code style={{ fontFamily: 'monospace', fontSize: 9.5, color: 'rgba(100,116,139,0.75)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.value}</code>
+                  </div>
+                  <div style={{ flexShrink: 0, opacity: copiedKey === t.name ? 1 : 0.4 }}>
+                    {copiedKey === t.name
+                      ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      : <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="7" height="8" rx="1.5" stroke="rgba(148,163,184,0.6)" strokeWidth="1.2"/><rect x="4" y="1" width="7" height="8" rx="1.5" stroke="rgba(148,163,184,0.6)" strokeWidth="1.2" fill="none"/></svg>
+                    }
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Naming Convention ── */}
+        {activeTab === 'naming' && (
+          <div>
+            <SectionHead title="Naming Convention" sub="Token taxonomy · BEM-inspired · Cursor / IDE autocomplete optimized"/>
+            {/* Anatomy diagram */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '16px 14px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>Token Anatomy</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 16, color: '#E2E8F0', letterSpacing: '-0.5px', marginBottom: 14 }}>
+                <span style={{ color: '#22D3EE' }}>--mb</span>
+                <span style={{ color: 'rgba(148,163,184,0.4)' }}>-</span>
+                <span style={{ color: '#818CF8' }}>color</span>
+                <span style={{ color: 'rgba(148,163,184,0.4)' }}>-</span>
+                <span style={{ color: '#4FD37A' }}>brand</span>
+                <span style={{ color: 'rgba(148,163,184,0.4)' }}>-</span>
+                <span style={{ color: '#FFD54A' }}>dark</span>
+              </div>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                {[
+                  { part: '--mb', color: '#22D3EE', label: 'Prefix', desc: 'Always --mb- to namespace all tokens and enable IDE autocomplete' },
+                  { part: 'color', color: '#818CF8', label: 'Category', desc: 'color · font · space · radius · shadow · opacity · border · z · icon · btn · card · duration · ease' },
+                  { part: 'brand', color: '#4FD37A', label: 'Role', desc: 'Semantic role of the value (brand, success, text, surface, etc.)' },
+                  { part: 'dark', color: '#FFD54A', label: 'Variant', desc: 'Modifier: dark · light · faint · mid · inverse · hover · active · disabled' },
+                ].map((p, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', flex: '1 0 180px', background: `${p.color}0D`, borderRadius: 10, border: `1px solid ${p.color}22`, padding: '9px 11px' }}>
+                    <div style={{ fontFamily: 'monospace', fontSize: 13, color: p.color, fontWeight: 900, flexShrink: 0 }}>{p.part}</div>
+                    <div>
+                      <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, color: p.color, marginBottom: 3 }}>{p.label}</div>
+                      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10.5, color: 'rgba(148,163,184,0.7)', lineHeight: 1.5 }}>{p.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Rules table */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 16, padding: '14px 16px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: '#E2E8F0', marginBottom: 12 }}>Structural Patterns</div>
+              {DT_NAMING_RULES.map((r, i) => (
+                <div key={i} style={{
+                  display: 'flex', flexDirection: 'column', gap: 3,
+                  borderBottom: i < DT_NAMING_RULES.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  paddingBottom: 10, marginBottom: 10,
+                }}>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
+                    <code style={{ fontFamily: 'monospace', fontSize: 10, color: '#818CF8', background: 'rgba(129,140,248,0.1)', borderRadius: 5, padding: '2px 7px', flexShrink: 0 }}>{r.pattern}</code>
+                    <code style={{ fontFamily: 'monospace', fontSize: 10, color: '#22D3EE' }}>{r.ex}</code>
+                  </div>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: 'rgba(100,116,139,0.8)', paddingLeft: 2 }}>{r.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Cursor usage tip */}
+            <div style={{ background: 'rgba(34,211,238,0.05)', borderRadius: 14, border: '1px solid rgba(34,211,238,0.15)', padding: '14px 16px', marginBottom: 14 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12.5, color: '#22D3EE', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>⌨️</span> Cursor / IDE Autocomplete
+              </div>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: 'rgba(148,163,184,0.8)', lineHeight: 1.65, marginBottom: 10 }}>
+                Type <code style={{ color: '#22D3EE', background: 'rgba(34,211,238,0.1)', borderRadius: 4, padding: '1px 5px', fontFamily: 'monospace', fontSize: 11 }}>--mb-</code> in any CSS value field to see all tokens. Cursor / VS Code will autocomplete from the <code style={{ color: '#22D3EE', background: 'rgba(34,211,238,0.1)', borderRadius: 4, padding: '1px 5px', fontFamily: 'monospace', fontSize: 11 }}>:root</code> block automatically.
+              </div>
+              <pre style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(148,163,184,0.75)', margin: 0, lineHeight: 1.8, background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '10px 12px', overflow: 'auto' }}>
+{`.btn-primary {
+  height: var(--mb-btn-h-md);         /* 48px */
+  border-radius: var(--mb-radius-lg); /* 16px */
+  background: var(--mb-color-brand);  /* #FF9B5C */
+  box-shadow: 0 var(--mb-btn-ledge-md) 0 0
+    var(--mb-color-brand-dark);       /* 3D ledge */
+  font-size: var(--mb-btn-text-md);   /* 15px */
+  font-weight: var(--mb-weight-black);/* 900 */
+  transition: all var(--mb-duration-fast)
+    var(--mb-ease-spring);            /* 150ms spring */
+}`}
+              </pre>
+            </div>
+
+            {/* Category index */}
+            <div style={{ background: panelBg, border: panelBorder, borderRadius: 14, padding: '12px 14px' }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, color: '#E2E8F0', marginBottom: 10 }}>Category Index</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {[
+                  ['--mb-color-*',    '#FF9B5C'], ['--mb-font-*',    '#4FD37A'],
+                  ['--mb-text-*',     '#6BCBFF'], ['--mb-weight-*',  '#6BCBFF'],
+                  ['--mb-leading-*',  '#6BCBFF'], ['--mb-tracking-*','#6BCBFF'],
+                  ['--mb-space-*',    '#FFD54A'], ['--mb-radius-*',  '#A78BFA'],
+                  ['--mb-z-*',        '#818CF8'], ['--mb-shadow-*',  '#94A3B8'],
+                  ['--mb-opacity-*',  '#CBD5E1'], ['--mb-border-*',  '#64748B'],
+                  ['--mb-grid-*',     '#22D3EE'], ['--mb-bp-*',      '#38BDF8'],
+                  ['--mb-icon-*',     '#67E8F9'], ['--mb-btn-*',     '#FF9B5C'],
+                  ['--mb-card-*',     '#FB923C'], ['--mb-duration-*','#C084FC'],
+                  ['--mb-ease-*',     '#E879F9'],
+                ].map(([cat, color]) => (
+                  <code key={cat} style={{
+                    fontFamily: 'monospace', fontSize: 10, color: color,
+                    background: `${color}14`, borderRadius: 6, padding: '3px 8px',
+                    border: `1px solid ${color}25`,
+                  }}>{cat}</code>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
